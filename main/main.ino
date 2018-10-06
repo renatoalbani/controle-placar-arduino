@@ -1,669 +1,246 @@
 
-//***********************************************************************
-//	Skecth básico para...
-//
-//
-//***********************************************************************
+/*
+  Skecth principal
+  @Criador <Incluir dados de quem escreveu para Leandro>
+           Leandro Morozowski <lmorozowski@hotmail.com>,  
+           Renato Albani dos Santos <renato.utfpr@gmail.com>,
+           2018
+  @Atualiado Renato Albani dos Santos <renato.utfpr@gmail.com> Outubro, 2018
+ */
 
-
-
-
-//***********************************************************************
-//	Definição dos modelos (ou tipos) de placas da Plataforma
-//	Arduino, suportados por este Sistema:
-//=======================================================================
-
-//#define	UNO_rev3	1	// placa modelo "Arduino UNO rev 3".
-#define	MEGA_2560	2	// placa modelo "Arduino Mega 2560".
-
-//***********************************************************************
-
-
-
-
-//***********************************************************************
-//	Opção para a placa de Hardware utilizada no Sistema:
-//
-//	UNO = opção para utilização da placa Arduino UNO.
-//	MEGA_2560 = opção para utilização da placa Arduino Mega 2560.
-//
-//=======================================================================
-
-#define	HW_Board 	MEGA_2560	// seleciona a placa utilizada.
-//#define	HW_Board 	UNO_rev3	// seleciona a placa utilizada.
-
-//***********************************************************************
-
-
-
-
-//***********************************************************************
-//	Opção para execução "real" ou "simulada":
-//
-//	0 = execução "real" via placa física.
-//	1 = execução "simulada" via placa virtual.
-//
-//=======================================================================
-
-#define	SIMUL	1	// seleciona execução "real" ou "simulada".
-
-//***********************************************************************
-
-
-
-
-//***********************************************************************
-//	Opção para disponibilidade dos Placares "Main" e "Piloto":
-//
-//	0 = Placar ausente.
-//	1 = Placar presente.
-//
-//=======================================================================
-
-#define	Main_DISPLAY_ON		1	// indica se o Placar "Main" está
-					// presente no Sistema.
-//-----------------------------------------------------------------------
-#define	Pilot_DISPLAY_ON	1	// indica se o Placar "Piloto" está
-					// presente no Sistema.
-//***********************************************************************
-
-
-
-
-//***********************************************************************
-//	Bibliotecas utilizadas neste Sistema:
-//=======================================================================
-
+/**
+ *	Bibliotecas utilizadas neste Sistema:
+ **/
+#include "main.h" // funcoes utilitarias e definicoes de tipos
 #include <stdio.h>	// "stdio" nativo do C++, para Arduino (CPU AVR).
 #include <stdlib.h>	// "stdlib" nativo do C++, para Arduino (CPU AVR).
-
 #include <avr/pgmspace.h>	// para acesso à FLASH da CPU.
+#include "pgmrom.h" //funcoes para acesso a memória de programa
 
-//***********************************************************************
+/**
+ * Definicao da pinagem relativa aos sinais de Controle de
+ * Hardware, quando a placa usada e o Arduino Mega 2560
+ * (MODO NaO SIMULADO (REAL))
+ **/
+#if	( ( HW_Board == MEGA_2560 ) && ( SIMUL == 0 ) )	// opcao para Arduino
 
-
-
-
-//***********************************************************************
-//	Definição de tipos para facilitar codificação do programa:
-//=======================================================================
-
-#define	uint	unsigned int	// tipo inteiros positivos de 16 bits.
-
-#define	ulong	unsigned long	// tipo inteiros positivos de 32 bits.
-
-//-----------------------------------------------------------------------
-
-typedef	unsigned char	BYTE;	// tipo 8 bits, não sinalizado.
-typedef	unsigned short	WORD;	// tipo 16 bits, não sinalizado.
-typedef	unsigned long	DWORD;	// tipo 32 bits, não sinalizado.
-
-typedef	signed char	sBYTE;	// tipo 8 bits, sinalizado.
-typedef	signed short	sWORD;	// tipo 16 bits, sinalizado.
-typedef	signed long	sDWORD;	// tipo 32 bits, sinalizado.
-
-//-----------------------------------------------------------------------
-
-typedef	BYTE*	BYTE_PTR;	// tipo Ponteiro para acesso a Bytes.
-
-//***********************************************************************
-
-
-
-
-//***********************************************************************
-//	Definição de tipos e funções para acesso à Memória de Programa:
-//=======================================================================
-
-#define	ROM_set	const PROGMEM	// definição de dados na Flash da CPU.
-
-#define	ROM_BYTE_ptr	const char *	// definição de um Ponteiro para acesso
-					// à Bytes armazenados na Flash.
-//-----------------------------------------------------------------------
-
-#define ROM_get8(var)	pgm_read_byte_near(var)	// função para leitura de um
-						// Byte armazenado na Flash.
-
-#define ROM_get16(var)	pgm_read_word_near(var)	// função para leitura de uma
-						// Word armazenada na Flash.
-
-#define ROM_PTR_get(var) pgm_read_ptr_near(var)	// função para leitura de um
-						// Ponteiro armazenado na Flash.
-//***********************************************************************
-
-
-
-
-//***********************************************************************
-//	Definição de funções para especificar armazenamento de strings
-//	na memória de Programa, em métodos de "printagem" serial:
-//=======================================================================
-
-#define	ROM_SERIAL_print(s)	Serial.print(F(s))
-
-#define	ROM_SERIAL_LF_print(s)	Serial.println(F(s))
-
-//***********************************************************************
-
-
-
-
-//***********************************************************************
-//	Definição de padrões de bit para facilitar codificação do
-//	Programa em acessos individuais aos respectivos bits:
-//-----------------------------------------------------------------------
-
-#define	BIT_0	0x01	// padrão binário correspondente ao "bit 0".
-#define	BIT_1	0x02	// padrão binário correspondente ao "bit 1".
-#define	BIT_2	0x04	// padrão binário correspondente ao "bit 2".
-#define	BIT_3	0x08	// padrão binário correspondente ao "bit 3".
-#define	BIT_4	0x10	// padrão binário correspondente ao "bit 4".
-#define	BIT_5	0x20	// padrão binário correspondente ao "bit 5".
-#define	BIT_6	0x40	// padrão binário correspondente ao "bit 6".
-#define	BIT_7	0x80	// padrão binário correspondente ao "bit 7".
-
-#define	BIT_blank	0x00	// padrão para todos os bits em "0".
-
-//***********************************************************************
-
-
-
-
-//***********************************************************************
-//	Definição de uma estrutura para acesso aos padrões de bits dos
-//	segmentos de LEDs do Display, e especificação dos pinos de HW
-//	para controle do Placar físico:
-//=======================================================================
-
-struct	DISPLAY_desc
-{
-	BYTE_PTR SEGM_code_TAB;	// Tabela de codificação dos segmentos do Display.
-
-	BYTE_PTR TMO_code_TAB;	// Tabela com codificação do Timeout "Home/Guest".
-
-	BYTE_PTR VANT_code_TAB;	// Tabela com codificação do "Vantage".
-
-	bool	polarity;	// polaridade do Display (anodo/katodo comum).
-
-// - - - - - - - - - - - - - - - -
-
-	BYTE SDOUT_pin;		// pino correspondente ao sinal "SDOUT".
-
-	BYTE SCLK_pin;		// pino correspondente ao sinal "SCLK".
-
-	BYTE PCLK_pin;		// pino correspondente ao sinal "PCLK".
-
-} DISPLAY_info;
-
-//***********************************************************************
-
-
-
-
-//***********************************************************************
-//	Definição da pinagem relativa aos sinais de Controle de
-//	Hardware, quando a placa usada é o Arduino Mega 2560 "real":
-//=======================================================================
-
-#if	( ( HW_Board == MEGA_2560 ) && ( SIMUL == 0 ) )	// opção para Arduino
-//__________________________________________________	// Mega 2560 "real":
-
-#define	SDOUT_piloto	2	// pino da placa para o sinal "SDOUT" do "Piloto".
-
-#define	SCLK_piloto	6	// pino da placa para o sinal "SCLK" do "Piloto".
-
-#define	PCLK_piloto	4	// pino da placa para o sinal "PCLK" do "Piloto".
-
-// - - - - - - - - - - - - - - - -
-
-#define	SDOUT_main	8	// pino da placa para o sinal "SDOUT" do "Main".
-
-#define	SCLK_main	12	// pino da placa para o sinal "SCLK" do "Main".
-
-#define	PCLK_main	10	// pino da placa para o sinal "PCLK" do "Main".
-//__________________________________________________
+  #define	SDOUT_piloto	2	// pino da placa para o sinal "SDOUT" do "Piloto".
+  #define	SCLK_piloto	6	// pino da placa para o sinal "SCLK" do "Piloto".
+  #define	PCLK_piloto	4	// pino da placa para o sinal "PCLK" do "Piloto".
+    
+  #define	SDOUT_main	8	// pino da placa para o sinal "SDOUT" do "Main".
+  #define	SCLK_main	12	// pino da placa para o sinal "SCLK" do "Main".
+  #define	PCLK_main	10	// pino da placa para o sinal "PCLK" do "Main".
 
 #endif
 
-//***********************************************************************
+/**
+ * Definicao da pinagem relativa aos sinais de Controle de
+ * Hardware, quando a placa usada e o Arduino Mega 2560
+ * (MODO SIMULADO)
+ **/
+#if	( ( HW_Board == MEGA_2560 ) && ( SIMUL == 1 ) )
 
+  #define	SDOUT_piloto	5	// pino da placa para o sinal "SDOUT" do "Piloto".
+  #define	SCLK_piloto	6	// pino da placa para o sinal "SCLK" do "Piloto".
+  #define	PCLK_piloto	50	// pino da placa para o sinal "PCLK" do "Piloto".
 
-
-
-//***********************************************************************
-//	Definição da pinagem relativa aos sinais de Controle de
-//	Hardware, quando a placa usada é o Arduino Mega 2560 "simulado":
-//=======================================================================
-
-#if	( ( HW_Board == MEGA_2560 ) && ( SIMUL == 1 ) )	// opção para Arduino
-//__________________________________________________	// Mega 2560 simulado:
-
-#define	SDOUT_piloto	5	// pino da placa para o sinal "SDOUT" do "Piloto".
-
-#define	SCLK_piloto	6	// pino da placa para o sinal "SCLK" do "Piloto".
-
-#define	PCLK_piloto	50	// pino da placa para o sinal "PCLK" do "Piloto".
-
-// - - - - - - - - - - - - - - - -
-
-#define	SDOUT_main	5	// pino da placa para o sinal "SDOUT" do "Main".
-
-#define	SCLK_main	6	// pino da placa para o sinal "SCLK" do "Main".
-
-#define	PCLK_main	7	// pino da placa para o sinal "PCLK" do "Main".
-//__________________________________________________
+  #define	SDOUT_main	5	// pino da placa para o sinal "SDOUT" do "Main".
+  #define	SCLK_main	6	// pino da placa para o sinal "SCLK" do "Main".
+  #define	PCLK_main	7	// pino da placa para o sinal "PCLK" do "Main".
 
 #endif
 
-//***********************************************************************
+/**
+ * Definicao da pinagem relativa aos sinais de Controle de
+ * Hardware, quando a placa usada e o Arduino UNO rev 3:
+ **/
+#if	( HW_Board == UNO_rev3 )
 
+  #define	SDOUT_piloto	5	// pino da placa para o sinal "SDOUT" do "Piloto".
+  #define	SCLK_piloto	6	// pino da placa para o sinal "SCLK" do "Piloto".
+  #define	PCLK_piloto	4	// pino da placa para o sinal "PCLK" do "Piloto".
 
-
-
-//***********************************************************************
-//	Definição da pinagem relativa aos sinais de Controle de
-//	Hardware, quando a placa usada é o Arduino UNO rev 3:
-//=======================================================================
-
-#if	( HW_Board == UNO_rev3 )	// opção para Arduino UNO rev 3:
-//__________________________________________________
-
-#define	SDOUT_piloto	5	// pino da placa para o sinal "SDOUT" do "Piloto".
-
-#define	SCLK_piloto	6	// pino da placa para o sinal "SCLK" do "Piloto".
-
-#define	PCLK_piloto	4	// pino da placa para o sinal "PCLK" do "Piloto".
-
-// - - - - - - - - - - - - - - - -
-
-#define	SDOUT_main	5	// pino da placa para o sinal "SDOUT" do "Main".
-
-#define	SCLK_main	6	// pino da placa para o sinal "SCLK" do "Main".
-
-#define	PCLK_main	7	// pino da placa para o sinal "PCLK" do "Main".
-//__________________________________________________
+  #define	SDOUT_main	5	// pino da placa para o sinal "SDOUT" do "Main".
+  #define	SCLK_main	6	// pino da placa para o sinal "SCLK" do "Main".
+  #define	PCLK_main	7	// pino da placa para o sinal "PCLK" do "Main".
 
 #endif
 
-//***********************************************************************
+/**
+ *	Definicao da polaridade dos Displays 
+ *   (Anodo ou Katodo Comum), 
+ *   para o Placar "Main"
+ **/
+ #define Main_DISPLAY_pol	KATODO_comum
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
-#define	ANODO_comum	0	// indica Display tipo "anodo comum".
-
-#define	KATODO_comum	1	// indica Display tipo "katodo comum".
-
-//***********************************************************************
-
-
-
-
-//***********************************************************************
-//	Mapeamento dos segmentos do Display no Placar "Main":
-//=======================================================================
-
-#define	SEG_aM	BIT_7	// bit correspondente ao Segmento "a".
-#define	SEG_bM	BIT_1	// bit correspondente ao Segmento "b".
-#define	SEG_cM	BIT_2	// bit correspondente ao Segmento "c".
-#define	SEG_dM	BIT_3	// bit correspondente ao Segmento "d".
-#define	SEG_eM	BIT_4	// bit correspondente ao Segmento "e".
-#define	SEG_fM	BIT_5	// bit correspondente ao Segmento "f".
-#define	SEG_gM	BIT_6	// bit correspondente ao Segmento "g".
-
-//***********************************************************************
-
-
-
-
-//***********************************************************************
-//	Mapeamento dos segmentos do Display no Placar "Piloto":
-//=======================================================================
-
-#define	SEG_aP	BIT_2	// bit correspondente ao Segmento "a".
-#define	SEG_bP	BIT_1	// bit correspondente ao Segmento "b".
-#define	SEG_cP	BIT_5	// bit correspondente ao Segmento "c".
-#define	SEG_dP	BIT_6	// bit correspondente ao Segmento "d".
-#define	SEG_eP	BIT_7	// bit correspondente ao Segmento "e".
-#define	SEG_fP	BIT_3	// bit correspondente ao Segmento "f".
-#define	SEG_gP	BIT_4	// bit correspondente ao Segmento "g".
-
-//***********************************************************************
-
-
-
-
-//***********************************************************************
-//	Codificação dos padrões numéricos BCD em 7 segmentos, para o
-//	Placar "Main".
-//=======================================================================
-
-#define	Seven_SEG_0_patt_M	( SEG_aM + SEG_bM + SEG_cM + SEG_dM + SEG_eM + SEG_fM )
-#define	Seven_SEG_1_patt_M	( SEG_bM + SEG_cM )
-#define	Seven_SEG_2_patt_M	( SEG_aM + SEG_bM + SEG_dM + SEG_eM + SEG_gM )
-#define	Seven_SEG_3_patt_M	( SEG_aM + SEG_bM + SEG_cM + SEG_dM + SEG_gM )
-#define	Seven_SEG_4_patt_M	( SEG_bM + SEG_cM + SEG_fM + SEG_gM )
-#define	Seven_SEG_5_patt_M	( SEG_aM + SEG_cM + SEG_dM + SEG_fM + SEG_gM )
-#define	Seven_SEG_6_patt_M	( SEG_aM + SEG_cM + SEG_dM + SEG_eM + SEG_fM + SEG_gM )
-#define	Seven_SEG_7_patt_M	( SEG_aM + SEG_bM + SEG_cM )
-#define	Seven_SEG_8_patt_M	( SEG_aM + SEG_bM + SEG_cM + SEG_dM + SEG_eM + SEG_fM + SEG_gM )
-#define	Seven_SEG_9_patt_M	( SEG_aM + SEG_bM + SEG_cM + SEG_dM + SEG_fM + SEG_gM )
-
-//***********************************************************************
-
-
-
-
-//***********************************************************************
-//	Definição do tipo do Display (Anodo ou Katodo Comum), para o
-//	Placar "Main":
-//
-//	KATODO_comum = opção para Display tipo "Katodo Comum".
-//	ANODO_comum  = opção para Display tipo "Anodo Comum".
-//
-//=======================================================================
-
-#if	( SIMUL == 0 )	// opção para Arduino Mega 2560 "real":
-
-#define Main_DISPLAY_pol	KATODO_comum
-
-#else		// opção para Arduino Mega 2560 "simulado":
-
-#define Main_DISPLAY_pol	KATODO_comum
-
-#endif
-
-//***********************************************************************
-
-
-
-
-//***********************************************************************
-//	Codificação dos padrões numéricos BCD em 7 segmentos, para o
-//	Placar "Piloto".
-//=======================================================================
-
-#define	Seven_SEG_0_patt_P	( SEG_aP + SEG_bP + SEG_cP + SEG_dP + SEG_eP + SEG_fP )
-#define	Seven_SEG_1_patt_P	( SEG_bP + SEG_cP )
-#define	Seven_SEG_2_patt_P	( SEG_aP + SEG_bP + SEG_dP + SEG_eP + SEG_gP )
-#define	Seven_SEG_3_patt_P	( SEG_aP + SEG_bP + SEG_cP + SEG_dP + SEG_gP )
-#define	Seven_SEG_4_patt_P	( SEG_bP + SEG_cP + SEG_fP + SEG_gP )
-#define	Seven_SEG_5_patt_P	( SEG_aP + SEG_cP + SEG_dP + SEG_fP + SEG_gP )
-#define	Seven_SEG_6_patt_P	( SEG_aP + SEG_cP + SEG_dP + SEG_eP + SEG_fP + SEG_gP )
-#define	Seven_SEG_7_patt_P	( SEG_aP + SEG_bP + SEG_cP )
-#define	Seven_SEG_8_patt_P	( SEG_aP + SEG_bP + SEG_cP + SEG_dP + SEG_eP + SEG_fP + SEG_gP )
-#define	Seven_SEG_9_patt_P	( SEG_aP + SEG_bP + SEG_cP + SEG_dP + SEG_fP + SEG_gP )
-
-//***********************************************************************
-
-
-
-
-//***********************************************************************
-//	Definição do tipo do Display (Anodo ou Katodo Comum), para o
-//	Placar "Piloto":
-//
-//	KATODO_comum = opção para Display tipo "Katodo Comum".
-//	ANODO_comum  = opção para Display tipo "Anodo Comum".
-//
-//=======================================================================
-
-#if	( SIMUL == 0 )	// opção para Arduino Mega 2560 "real":
-
+/**
+ * Definicao do tipo do Display 
+ *  (Anodo ou Katodo Comum), 
+ * para o Placar "Piloto"
+ **/
 #define Pilot_DISPLAY_pol	ANODO_comum
 
-#else		// opção para Arduino Mega 2560 "simulado":
-
-#define Pilot_DISPLAY_pol	KATODO_comum
-
-#endif
-
-//***********************************************************************
-
-
-
-
-//***********************************************************************
-//	Tabela para tradução de dígitos BCD para os respectivos padrões
-//	numéricos codificados em 7 segmentos, para o Placar "Main":
-//=======================================================================
-
+/**
+ * Tabela para traducao de digitos BCD para os respectivos padroes
+ * numericos codificados em 7 segmentos, para o Placar "Main"
+ **/
 ROM_set  BYTE Seven_SEG_code_M [] =
-{				// index:
-	Seven_SEG_0_patt_M,	// 0: padrão do "número 0", em 7 segmentos.
-	Seven_SEG_1_patt_M,	// 1: padrão do "número 1", em 7 segmentos.
-	Seven_SEG_2_patt_M,	// 2: padrão do "número 2", em 7 segmentos.
-	Seven_SEG_3_patt_M,	// 3: padrão do "número 3", em 7 segmentos.
-	Seven_SEG_4_patt_M,	// 4: padrão do "número 4", em 7 segmentos.
-	Seven_SEG_5_patt_M,	// 5: padrão do "número 5", em 7 segmentos.
-	Seven_SEG_6_patt_M,	// 6: padrão do "número 6", em 7 segmentos.
-	Seven_SEG_7_patt_M,	// 7: padrão do "número 7", em 7 segmentos.
-	Seven_SEG_8_patt_M,	// 8: padrão do "número 8", em 7 segmentos.
-	Seven_SEG_9_patt_M	// 9: padrão do "número 9", em 7 segmentos.
+{				
+	Seven_SEG_0_patt_M,	// 0: padrao do "número 0", em 7 segmentos.
+	Seven_SEG_1_patt_M,	// 1: padrao do "número 1", em 7 segmentos.
+	Seven_SEG_2_patt_M,	// 2: padrao do "número 2", em 7 segmentos.
+	Seven_SEG_3_patt_M,	// 3: padrao do "número 3", em 7 segmentos.
+	Seven_SEG_4_patt_M,	// 4: padrao do "número 4", em 7 segmentos.
+	Seven_SEG_5_patt_M,	// 5: padrao do "número 5", em 7 segmentos.
+	Seven_SEG_6_patt_M,	// 6: padrao do "número 6", em 7 segmentos.
+	Seven_SEG_7_patt_M,	// 7: padrao do "número 7", em 7 segmentos.
+	Seven_SEG_8_patt_M,	// 8: padrao do "número 8", em 7 segmentos.
+	Seven_SEG_9_patt_M	// 9: padrao do "número 9", em 7 segmentos.
 };
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//	Tabela para tradução de dígitos BCD para os respectivos padrões
-//	numéricos codificados em 7 segmentos, para o Placar "Piloto":
-//=======================================================================
-
+/**
+ * Tabela para traducao de digitos BCD para os respectivos padroes
+ * numericos codificados em 7 segmentos, para o Placar "Piloto":
+ **/
 ROM_set  BYTE Seven_SEG_code_P [] =
-{				// index:
-	Seven_SEG_0_patt_P,	// 0: padrão do "número 0", em 7 segmentos.
-	Seven_SEG_1_patt_P,	// 1: padrão do "número 1", em 7 segmentos.
-	Seven_SEG_2_patt_P,	// 2: padrão do "número 2", em 7 segmentos.
-	Seven_SEG_3_patt_P,	// 3: padrão do "número 3", em 7 segmentos.
-	Seven_SEG_4_patt_P,	// 4: padrão do "número 4", em 7 segmentos.
-	Seven_SEG_5_patt_P,	// 5: padrão do "número 5", em 7 segmentos.
-	Seven_SEG_6_patt_P,	// 6: padrão do "número 6", em 7 segmentos.
-	Seven_SEG_7_patt_P,	// 7: padrão do "número 7", em 7 segmentos.
-	Seven_SEG_8_patt_P,	// 8: padrão do "número 8", em 7 segmentos.
-	Seven_SEG_9_patt_P	// 9: padrão do "número 9", em 7 segmentos.
+{				
+	Seven_SEG_0_patt_P,	// 0: padrao do "número 0", em 7 segmentos.
+	Seven_SEG_1_patt_P,	// 1: padrao do "número 1", em 7 segmentos.
+	Seven_SEG_2_patt_P,	// 2: padrao do "número 2", em 7 segmentos.
+	Seven_SEG_3_patt_P,	// 3: padrao do "número 3", em 7 segmentos.
+	Seven_SEG_4_patt_P,	// 4: padrao do "número 4", em 7 segmentos.
+	Seven_SEG_5_patt_P,	// 5: padrao do "número 5", em 7 segmentos.
+	Seven_SEG_6_patt_P,	// 6: padrao do "número 6", em 7 segmentos.
+	Seven_SEG_7_patt_P,	// 7: padrao do "número 7", em 7 segmentos.
+	Seven_SEG_8_patt_P,	// 8: padrao do "número 8", em 7 segmentos.
+	Seven_SEG_9_patt_P	// 9: padrao do "número 9", em 7 segmentos.
 };
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//	Codificação dos padrões dos segmentos de "timeout", para o
-//	Placar "Main":
-//=======================================================================
-
+/**
+ * Codificacao dos padroes dos segmentos de "timeout", para o
+ * Placar "Main":
+ **/
 #define	HOME_TMO_0_patt_M	( BIT_blank )
 #define	HOME_TMO_1_patt_M	( BIT_3 )
 #define	HOME_TMO_2_patt_M	( BIT_3 + BIT_2 )
 #define	HOME_TMO_3_patt_M	( BIT_3 + BIT_2 + BIT_1 )
-
 #define	HOME_TMO_mask_M		( BIT_3 + BIT_2 + BIT_1 )
-
-//-----------------------------------------------------------------------
 
 #define	GUEST_TMO_0_patt_M	( BIT_blank )
 #define	GUEST_TMO_1_patt_M	( BIT_6 )
 #define	GUEST_TMO_2_patt_M	( BIT_6 + BIT_5 )
 #define	GUEST_TMO_3_patt_M	( BIT_6 + BIT_5 + BIT_4 )
-
 #define	GUEST_TMO_mask_M	( BIT_6 + BIT_5 + BIT_4 )
 
-//***********************************************************************
-
-
-
-
-//***********************************************************************
-//	Codificação dos padrões dos segmentos de "timeout", para o
-//	Placar "Piloto":
-//=======================================================================
-
+/**
+ * Codificacao dos padroes dos segmentos de "timeout", para o
+ * Placar "Piloto":
+ **/
 #define	HOME_TMO_0_patt_P	( BIT_blank )
 #define	HOME_TMO_1_patt_P	( BIT_3 )
 #define	HOME_TMO_2_patt_P	( BIT_3 + BIT_2 )
 #define	HOME_TMO_3_patt_P	( BIT_3 + BIT_2 + BIT_1 )
-
 #define	HOME_TMO_mask_P		( BIT_3 + BIT_2 + BIT_1 )
-
-//-----------------------------------------------------------------------
 
 #define	GUEST_TMO_0_patt_P	( BIT_blank )
 #define	GUEST_TMO_1_patt_P	( BIT_6 )
 #define	GUEST_TMO_2_patt_P	( BIT_6 + BIT_5 )
 #define	GUEST_TMO_3_patt_P	( BIT_6 + BIT_5 + BIT_4 )
-
 #define	GUEST_TMO_mask_P	( BIT_6 + BIT_5 + BIT_4 )
 
-//***********************************************************************
-
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/**
+ * Tabela de codificacao dos segmentos de timeout,
+ * para o Placar "Main"
+ **/
 ROM_set  BYTE TMO_code_TAB_M [] =
-{						// index:
-	HOME_TMO_0_patt_M, GUEST_TMO_0_patt_M,	// 0:
-	HOME_TMO_1_patt_M, GUEST_TMO_1_patt_M,	// 1:
-	HOME_TMO_2_patt_M, GUEST_TMO_2_patt_M,	// 2:
-	HOME_TMO_3_patt_M, GUEST_TMO_3_patt_M,	// 3:
+{						
+	HOME_TMO_0_patt_M, 
+	GUEST_TMO_0_patt_M,	
+	
+	HOME_TMO_1_patt_M, 
+	GUEST_TMO_1_patt_M,	
+	
+	HOME_TMO_2_patt_M, 
+	GUEST_TMO_2_patt_M,
+ 	
+	HOME_TMO_3_patt_M, 
+	GUEST_TMO_3_patt_M,	
 
-	HOME_TMO_mask_M, GUEST_TMO_mask_M	// 4: máscara para os bits
-};						// de timeout.
-//***********************************************************************
+	HOME_TMO_mask_M, 
+	GUEST_TMO_mask_M
+};						
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/**
+ * Tabela de codificacao dos segmentos de timeout
+ * para o placar "Piloto"
+ **/
 ROM_set  BYTE TMO_code_TAB_P [] =
-{						// index:
-	HOME_TMO_0_patt_P, GUEST_TMO_0_patt_P,	// 0:
-	HOME_TMO_1_patt_P, GUEST_TMO_1_patt_P,	// 1:
-	HOME_TMO_2_patt_P, GUEST_TMO_2_patt_P,	// 2:
-	HOME_TMO_3_patt_P, GUEST_TMO_3_patt_P,	// 3:
+{						
+	HOME_TMO_0_patt_P, 
+	GUEST_TMO_0_patt_P,
+	
+	HOME_TMO_1_patt_P, 
+	GUEST_TMO_1_patt_P,
+ 
+	HOME_TMO_2_patt_P, 
+	GUEST_TMO_2_patt_P,
+ 
+	HOME_TMO_3_patt_P, 
+	GUEST_TMO_3_patt_P,
 
-	HOME_TMO_mask_P, GUEST_TMO_mask_P	// 4: máscara para os bits
-};						// de timeout.
-//***********************************************************************
+	HOME_TMO_mask_P, 
+	GUEST_TMO_mask_P
+};						
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
 
 enum { HOME_VANTAGE, GUEST_VANTAGE };
 
-//***********************************************************************
-
-
-
-
-//***********************************************************************
-//	Codificação dos padrões dos segmentos de "vantagem", para o
-//	Placar "Main":
-//=======================================================================
-
+/**
+ * Codificacao dos padroes dos segmentos de "vantagem", para o
+ * Placar "Main"
+ */
 #define	HOME_VANT_patt_M	BIT_7
-
 #define	GUEST_VANT_patt_M	BIT_0
-
-//-----------------------------------------------------------------------
-
 #define	VANT_PATT_mask_M	( HOME_VANT_patt_M + GUEST_VANT_patt_M )
 
-//***********************************************************************
-
-
-
-
-//***********************************************************************
-//	Codificação dos padrões dos segmentos de "vantagem", para o
-//	Placar "Piloto":
-//=======================================================================
-
+/**
+ *	Codificacao dos padroes dos segmentos de "vantagem", para o
+ *	Placar "Piloto"
+ */
 #define	HOME_VANT_patt_P	BIT_7
-
 #define	GUEST_VANT_patt_P	BIT_0
-
-//-----------------------------------------------------------------------
-
 #define	VANT_PATT_mask_P	( HOME_VANT_patt_P + GUEST_VANT_patt_P )
 
-//***********************************************************************
-
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/**
+ * Tabela de codificacao dos segmentos de "vantagem"
+ * para o placar "Main"
+ */
 ROM_set  BYTE VANT_code_TAB_M [] =
-{				// index:
-	HOME_VANT_patt_M,	// 0: padrão para "Home Vantage".
-	GUEST_VANT_patt_M,	// 1: padrão para "Guest Vantage".
-	VANT_PATT_mask_M	// 2: máscara para os bits "Vantage".
+{				
+	HOME_VANT_patt_M,	// 0: padrao para "Home Vantage".
+	GUEST_VANT_patt_M,	// 1: padrao para "Guest Vantage".
+	VANT_PATT_mask_M	// 2: mascara para os bits "Vantage".
 };
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/**
+ * Tabela de codificacao dos segmentos de "vantagem"
+ * para o placar "Piloto"
+ */
 ROM_set  BYTE VANT_code_TAB_P [] =
-{				// index:
-	HOME_VANT_patt_P,	// 0: padrão para "Home Vantage".
-	GUEST_VANT_patt_P,	// 1: padrão para "Guest Vantage".
-	VANT_PATT_mask_P	// 2: máscara para os bits "Vantage".
+{				
+	HOME_VANT_patt_P,	// 0: padrao para "Home Vantage".
+	GUEST_VANT_patt_P,	// 1: padrao para "Guest Vantage".
+	VANT_PATT_mask_P	// 2: mascara para os bits "Vantage".
 };
-//***********************************************************************
-
-
-
-
-//\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
-//
-//
-//
-//\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
-
-
-
-
-//***********************************************************************
-//
-//=======================================================================
 
 #define	VIEW_OFF	0
-
 #define	VIEW_ON		1
 
-//***********************************************************************
-
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/**
+ * Estrutura para tipagem do estado
+ * do indicador
+ */
 typedef union
 {
 	WORD	VIEW_STS;	// "view status" geral do Display.
@@ -672,156 +249,73 @@ typedef union
 	{
 		WORD GAME_TIME	:1;	// "view status" do indicador...
 		WORD GAME_quarter:1;	// "view status" do indicador...
-//__________________________________________________
 
 		WORD BALL_pos	:1;	// "view status" do indicador...
 		WORD BALL_down	:1;	// "view status" do indicador...
 		WORD BALL_to_go	:1;	// "view status" do indicador...
-//__________________________________________________
 
 		WORD SCORE_home	:1;	// "view status" do indicador...
 		WORD VANT_home	:1;	// "view status" do indicador...
 		WORD TMOUT_home	:1;	// "view status" do indicador...
-//__________________________________________________
 
 		WORD SCORE_guest:1;	// "view status" do indicador...
 		WORD VANT_guest	:1;	// "view status" do indicador...
 		WORD TMOUT_guest:1;	// "view status" do indicador...
-//__________________________________________________
 
 		WORD PLAY_CLOCK	:1;	// // "view status" do indicador...
 	};
 
 } DISPLAY_VIEW_type;
 
-//-----------------------------------------------------------------------
-
 DISPLAY_VIEW_type	DISPLAY_VIEW_STS;
 
-//***********************************************************************
-
-
-
-
-//\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
-//
-//
-//
-//\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
-
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/**
+ * Espelhamento de timeout e vantage
+ */
 BYTE	TMO_VANT_REG = 0;	// espelho do Registro de HW com bits do
-				// "timeout" e "vantage".
-//***********************************************************************
+				                // "timeout" e "vantage".
 
-
-
-
-//***********************************************************************
-//	Definição dos elementos referentes ao tempo do jogo:
-//=======================================================================
-
+/**
+ *	Definicao dos elementos referentes ao tempo do jogo:
+ **/
 BYTE	GAME_TIME_min;	// indica os minutos do tempo de jogo (00..59).
-
 BYTE	GAME_TIME_seg;	// indica os segundos do tempo de jogo (00..59).
 
-//***********************************************************************
+/**
+ * Definicao dos elementos referentes ao "spot de bola":
+ */
+BYTE	BALL_position;	// indica a posicao atual da Bola (00..99).
+BYTE	BALL_down;	    // indica o "down" da Bola (0..9).
+BYTE	BALL_to_go;	    // indica o "to go" da Bola (00..99).
 
+/*
+ * Definicao dos elementos referentes à Pontuacao e Timeout da 
+ * "casa" e dos "visitantes", da "vantagem" atual, e do "quarter"
+ * atual do jogo.
+ */
 
-
-
-//***********************************************************************
-//	Definição dos elementos referentes ao "spot de bola":
-//=======================================================================
-
-BYTE	BALL_position;	// indica a posição atual da Bola (00..99).
-
-BYTE	BALL_down;	// indica o "down" da Bola (0..9).
-
-BYTE	BALL_to_go;	// indica o "to go" da Bola (00..99).
-
-//***********************************************************************
-
-
-
-
-//***********************************************************************
-//	Definição dos elementos referentes à Pontuação e Timeout da 
-//	"casa" e dos "visitantes", da "vantagem" atual, e do "quarter"
-//	atual do jogo.
-//=======================================================================
-
-BYTE	SCORE_home;	// indica a pontuação da "casa" (00..99).
-
-BYTE	TMOUT_home;	// indica o "timeout" da "casa" (0..3).
-
-//-----------------------------------------------------------------------
-
-BYTE	SCORE_guest;	// indica a pontuação do "visitante" (00..99).
-
+BYTE	SCORE_home;	  // indica a pontuacao da "casa" (00..99).
+BYTE	TMOUT_home;	  // indica o "timeout" da "casa" (0..3).
+BYTE	SCORE_guest;	// indica a pontuacao do "visitante" (00..99).
 BYTE	TMOUT_guest;	// indica o "timeout" do "visitante" (0..3).
-
-//-----------------------------------------------------------------------
-
 BYTE	GAME_VANTAGE;	// indica a vantagem atual no jogo.
-
-//-----------------------------------------------------------------------
-
 BYTE	GAME_quarter;	// indica o "quarter" do jogo (1, 2, 3, ou 4).
 
-//***********************************************************************
+/*
+ * Definicao do elemento referente ao "Play Clock" atual do jogo:
+ */
+BYTE	PLAY_CLOCK;	              // indica o "Play Clock" atual do jogo (00..99).
+bool	PLAY_CLOCK_swap = false;	// indica se o "smart swap" esta
+					                      // ativo para o "Play Clock".
 
-
-
-
-//***********************************************************************
-//	Definição do elemento referente ao "Play Clock" atual do jogo:
-//=======================================================================
-
-BYTE	PLAY_CLOCK;	// indica o "Play Clock" atual do jogo (00..99).
-
-//***********************************************************************
-
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
-bool	PLAY_CLOCK_swap = false;	// indica se o "smart swap" está
-					// ativo para o "Play Clock".
-//***********************************************************************
-
-
-
-
-//\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
-//
-//
-//
-//\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
-
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Funcao para serializacao de um BYTE de dados 
+ * por emulacao de interface serial (RS232)
+ */
 void	HW_SERIAL_OUT_8 ( BYTE DATA_8 )
 {
-//--------------------------------------------------
-BYTE	bit_n;	// bit atual sendo enviado ao ShiftRegister.
-
-BYTE	bit_MASK;	// máscara binária para o bit atual.
-//--------------------------------------------------
+  BYTE	bit_n;	  // bit atual sendo enviado ao ShiftRegister.
+  BYTE	bit_MASK;	// mascara binaria para o bit atual.
 
 	bit_MASK = BIT_7;
 
@@ -847,21 +341,17 @@ BYTE	bit_MASK;	// máscara binária para o bit atual.
 
 		bit_MASK = ( bit_MASK >> 1);
 	}
-//..................................................
 
 	delayMicroseconds(1);
 	digitalWrite ( DISPLAY_info.SDOUT_pin, HIGH );
 	digitalWrite ( DISPLAY_info.SCLK_pin, LOW );
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/**
+ * Funcao para transicao de clock do LATCH
+ * de 74HC595 e memorizacao do estado 
+ * atual dos registradores de deslocamento
+ */
 void	HW_DISPLAY_REG_actualize ()
 {
 	digitalWrite ( DISPLAY_info.PCLK_pin, HIGH );
@@ -870,36 +360,27 @@ void	HW_DISPLAY_REG_actualize ()
 
 	digitalWrite ( DISPLAY_info.PCLK_pin, LOW );
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/**
+ * Funcao utilitaria para serializacao do estado dos 
+ * segmentos de um display 
+ */
 void	DISPLAY_PATTERN_send ( BYTE PATTERN )
 {
 	if ( DISPLAY_info.polarity == 0 ) PATTERN = ~PATTERN;
 
 	HW_SERIAL_OUT_8 ( PATTERN );
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Codifica e serializa um digito decimal para os segmentos 
+ * de um display de acordo com a tabela
+ * de codificacao e polarizacao configurada
+ */
 void	DISPLAY_DIGIT_send ( BYTE DATA )
 {
-//--------------------------------------------------
-BYTE	LSB;
-BYTE	PATTERN;
-//--------------------------------------------------
+  BYTE	LSB;
+  BYTE	PATTERN;
 
 	LSB = ( DATA & 0x0F );
 
@@ -909,33 +390,27 @@ BYTE	PATTERN;
 
 	HW_SERIAL_OUT_8 ( PATTERN );
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Codifica e serializa um dado no padrao BCD 
+ * para os seguimentos de um display de acordo 
+ * com a tabela de codificacao e polarizacao
+ * configurada
+ */
 void	DISPLAY_BCD_BYTE_send ( BYTE DATA )
 {
-//--------------------------------------------------
-BYTE	LSB;
-BYTE	MSB;
-BYTE	PATTERN;
-//--------------------------------------------------
+  BYTE	LSB;
+  BYTE	MSB;
+  BYTE	PATTERN;
 
 	LSB = ( DATA & 0x0F );
 	MSB = ( DATA & 0xF0 ) >> 4;
-//..................................................
 
 	PATTERN = ROM_get8 ( DISPLAY_info.SEGM_code_TAB + LSB );
 
 	if ( DISPLAY_info.polarity == 0 ) PATTERN = ~PATTERN;
 
 	HW_SERIAL_OUT_8 ( PATTERN );
-//..................................................
 
 	PATTERN = ROM_get8 ( DISPLAY_info.SEGM_code_TAB + MSB );
 
@@ -943,34 +418,24 @@ BYTE	PATTERN;
 
 	HW_SERIAL_OUT_8 ( PATTERN );
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Converte um dado booleano para BYTE 
+ */
 BYTE	BOOL_extent ( bool STS )
 {
 	return ( STS? 0xFF : 0 );
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Converte um byte em base hexadecimal 
+ * para o padrao BCD
+ */
 BYTE	HEX8_to_BCD8 ( BYTE HEX_8 )
 {
-//--------------------------------------------------
-BYTE	BCD_result;
-BYTE	i;
-//--------------------------------------------------
+
+  BYTE	BCD_result;
+  BYTE	i;
 
 	BCD_result = 0;
 
@@ -992,33 +457,23 @@ BYTE	i;
 
 	return ( BCD_result );
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Converte um byte no padrao BCD
+ * para a base hexadecimal
+ */
 BYTE	BCD8_to_HEX8 ( BYTE BCD_8 )
 {
 	return ( 10*( ( BCD_8 & 0xF0 ) >> 4 ) + ( BCD_8 & 0x0F ) );
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Converte uma palavra no padrao BCD
+ * para a base hexadecimal
+ */
 WORD	BCD16_to_HEX16 ( WORD BCD_16 )
 {
-//--------------------------------------------------
-WORD	HEX_16;
-//--------------------------------------------------
+  WORD	HEX_16;
 
 	HEX_16 = ( BCD_16 & 0x000F );
 	HEX_16 += 10*( ( BCD_16 & 0x00F0 ) >> 4 );
@@ -1027,49 +482,32 @@ WORD	HEX_16;
 
 	return ( HEX_16 );
 }
-//***********************************************************************
 
-
-
-
-//\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
-//
-//
-//
-//\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
-
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Envia o digito 0 para 
+ * os segmentos de um display
+ */
 void	BLANK_PATTERN_send ()
 {
 	DISPLAY_PATTERN_send (0);
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-
+/**
+ * Envia o digito 0 para
+ * os segmentos de dois display
+ * em sequencia
+ */
 void	BLANK_PATTERN_DOUBLE_send ()
 {
 	DISPLAY_PATTERN_send (0);
 	DISPLAY_PATTERN_send (0);
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Codifica e envia o estado dos displays de GAME TIME
+ *  @param BYTE minutos Decimal dos minutos
+ *  @param BYTE segundos Decimal dos segundos
+ */
 void	GAME_TIME_send ( BYTE minutos, BYTE segundos )
 {
 	if ( DISPLAY_VIEW_STS.GAME_TIME )
@@ -1083,15 +521,11 @@ void	GAME_TIME_send ( BYTE minutos, BYTE segundos )
 		BLANK_PATTERN_DOUBLE_send ();
 	}
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ *  Codifica e envia o estado do display de BALL POSITION
+ *   @param BYTE BALL_pos Posicao da bola
+ */
 void	BALL_POSITION_send ( BYTE BALL_pos )
 {
 	if ( DISPLAY_VIEW_STS.BALL_pos )
@@ -1100,15 +534,11 @@ void	BALL_POSITION_send ( BYTE BALL_pos )
 	}
 	else	BLANK_PATTERN_DOUBLE_send ();
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Codifica e envia o estado do display de BALL DOWN
+ *  @param BYTE BALL_down Estado de BALL DOWN
+ */
 void	BALL_DOWN_send ( BYTE BALL_down )
 {
 	if ( DISPLAY_VIEW_STS.BALL_down )
@@ -1117,15 +547,11 @@ void	BALL_DOWN_send ( BYTE BALL_down )
 	}
 	else	BLANK_PATTERN_send ();
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Codifica e envia o estado do display BALL TO GO
+ *  @param BYTE BALL_to_go Estado de BALL TO GO
+ */
 void	BALL_to_GO_send ( BYTE BALL_to_go )
 {
 	if ( DISPLAY_VIEW_STS.BALL_to_go )
@@ -1134,15 +560,11 @@ void	BALL_to_GO_send ( BYTE BALL_to_go )
 	}
 	else	BLANK_PATTERN_DOUBLE_send ();
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Codifica e envia o estado do display SCORE HOME (CASA)
+ *  @param BYTE SCORE_home Estado de SCORE HOME
+ */
 void	SCORE_HOME_send ( BYTE SCORE_home )
 {
 	if ( DISPLAY_VIEW_STS.SCORE_home )
@@ -1151,15 +573,11 @@ void	SCORE_HOME_send ( BYTE SCORE_home )
 	}
 	else	BLANK_PATTERN_DOUBLE_send ();
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Codifica e envia o estado do display SCORE GUEST (VISITANTE)
+ *  @param BYTE SCORE_guest Estado de SCORE GUEST
+ */
 void	SCORE_GUEST_send ( BYTE SCORE_guest )
 {
 	if ( DISPLAY_VIEW_STS.SCORE_guest )
@@ -1168,15 +586,11 @@ void	SCORE_GUEST_send ( BYTE SCORE_guest )
 	}
 	else	BLANK_PATTERN_DOUBLE_send ();
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/**
+ * Codifica e envia o estado do display GAME QUARTER
+ *  @param BYTE GAME_quarter Estado de GAME QUARTER
+ */
 void	GAME_QUARTER_send ( BYTE GAME_quarter )
 {
 	if ( DISPLAY_VIEW_STS.GAME_quarter )
@@ -1185,15 +599,11 @@ void	GAME_QUARTER_send ( BYTE GAME_quarter )
 	}
 	else	BLANK_PATTERN_send ();
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Codifica e envia o estado do display PLAY CLOCK
+ *  @param BYTE PLAY_CLOCK Estado de PLAY CLOCK
+ */
 void	PLAY_CLOCK_send ( BYTE PLAY_CLOCK )
 {
 	if ( DISPLAY_VIEW_STS.PLAY_CLOCK )
@@ -1202,124 +612,94 @@ void	PLAY_CLOCK_send ( BYTE PLAY_CLOCK )
 	}
 	else	BLANK_PATTERN_DOUBLE_send ();
 }
-//***********************************************************************
 
-
-
-
-//\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
-//
-//
-//
-//\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
-
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Codifica e envia o estado do display TIMEOUT VANTAGE  
+ */
 void	TMO_VANT_REG_send ()
 {
 	DISPLAY_PATTERN_send ( TMO_VANT_REG );
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Atualiza e codifica o estado em memoria 
+ * de TIMEOUT VANTAGE de acordo com a 
+ * tabela de codificacao
+ *  @param BYTE vantage Estado de TIMEOUT VANTAGE
+ */
 void	VANTAGE_actualize ( BYTE vantage )
 {
-//--------------------------------------------------
-BYTE	VANT_patt;
-//--------------------------------------------------
+  BYTE	VANT_patt;
 
 	if ( vantage == HOME_VANTAGE )
 	{
-		VANT_patt = ROM_get8 ( DISPLAY_info.VANT_code_TAB + 0 );	// obtém padrão de bits.
+		VANT_patt = ROM_get8 ( DISPLAY_info.VANT_code_TAB + 0 );	// obtem padrao de bits.
 
 		VANT_patt &= BOOL_extent( DISPLAY_VIEW_STS.VANT_home );
 	}
 	else
 	{
-		VANT_patt = ROM_get8 ( DISPLAY_info.VANT_code_TAB + 1 );	// obtém padrão de bits.
+		VANT_patt = ROM_get8 ( DISPLAY_info.VANT_code_TAB + 1 );	// obtem padrao de bits.
 
 		VANT_patt &= BOOL_extent( DISPLAY_VIEW_STS.VANT_guest );
 	}
-//..................................................
 
-	TMO_VANT_REG &= (~ROM_get8 ( DISPLAY_info.VANT_code_TAB + 2 ) );	// aplica máscara.
+	TMO_VANT_REG &= (~ROM_get8 ( DISPLAY_info.VANT_code_TAB + 2 ) );	// aplica mascara.
 
 	TMO_VANT_REG |= VANT_patt;
 }
-//***********************************************************************
 
 
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Atualiza e codifica o estado em memoria 
+ * do HOME TIMEOUT de acordo com a tabela
+ * de codificacao
+ */
 void	HOME_TIMEOUT_actualize ( BYTE timeout )
 {
-//--------------------------------------------------
-BYTE	TMO_patt;
-BYTE	index;
-//--------------------------------------------------
+  BYTE	TMO_patt;
+  BYTE	index;
 
 	index = 2*timeout;
 
-	TMO_patt = ROM_get8 ( DISPLAY_info.TMO_code_TAB + index );	// obtém padrão de bits.
+	TMO_patt = ROM_get8 ( DISPLAY_info.TMO_code_TAB + index );	// obtem padrao de bits.
 
 	TMO_patt &= BOOL_extent( DISPLAY_VIEW_STS.TMOUT_home );
-//..................................................
 
-	TMO_VANT_REG &= ( ~ROM_get8 ( DISPLAY_info.TMO_code_TAB + 2*4 ) );	// aplica máscara.
+	TMO_VANT_REG &= ( ~ROM_get8 ( DISPLAY_info.TMO_code_TAB + 2*4 ) );	// aplica mascara.
 
 	TMO_VANT_REG |= TMO_patt;
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Atualiza e codifica o estado em memoria 
+ * de GUEST TIMEOUT de acordo com a tabela
+ * de codificacao
+ */
 void	GUEST_TIMEOUT_actualize ( BYTE timeout )
 {
-//--------------------------------------------------
-BYTE	TMO_patt;
-BYTE	index;
-//--------------------------------------------------
+  BYTE	TMO_patt;
+  BYTE	index;
 
 	index = 2*timeout +1;
 
-	TMO_patt = ROM_get8 ( DISPLAY_info.TMO_code_TAB + index );	// obtém padrão de bits.
+	TMO_patt = ROM_get8 ( DISPLAY_info.TMO_code_TAB + index );	// obtem padrao de bits.
 
 	TMO_patt &= BOOL_extent( DISPLAY_VIEW_STS.TMOUT_guest );
-//..................................................
 
-	TMO_VANT_REG &= ( ~ROM_get8 ( DISPLAY_info.TMO_code_TAB + 2*4 +1 ) );	// aplica máscara.
+	TMO_VANT_REG &= ( ~ROM_get8 ( DISPLAY_info.TMO_code_TAB + 2*4 +1 ) );	// aplica mascara.
 
 	TMO_VANT_REG |= TMO_patt;
 }
-//***********************************************************************
 
 
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Atualiza e envia o estado dos displays de
+ * HOME e GUEST timeout e vantage 
+ *  @param BYTE HOME_tmo Timeout de HOME (CASA)
+ *  @param BYTE GUEST_tmo Timeout de GUEST (VISITANTE)
+ *  @param BYTE vantage VANTAGE
+ */
 void	TIMEOUT_VANTAGE_send ( BYTE HOME_tmo, BYTE GUEST_tmo, BYTE vantage )
 {
 	HOME_TIMEOUT_actualize ( HOME_tmo );
@@ -1330,24 +710,13 @@ void	TIMEOUT_VANTAGE_send ( BYTE HOME_tmo, BYTE GUEST_tmo, BYTE vantage )
 
 	TMO_VANT_REG_send ();
 }
-//***********************************************************************
 
-
-
-
-//\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
-//
-//
-//
-//\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
-
-
-
-
-//***********************************************************************
-//ORDEM DOS PLACARES
-//=======================================================================
-
+/**
+ * Serializacao do estado de todos os displays
+ * do placar de acordo com a ordem
+ * de ligacao e cascateamento dos displays
+ * nos circuitos de comando dos mesmos
+ */
 void	PLACAR_DISPLAY_normal_serialize ()
 {
   PLAY_CLOCK_send ( PLAY_CLOCK );
@@ -1363,7 +732,6 @@ void	PLACAR_DISPLAY_normal_serialize ()
   SCORE_HOME_send ( SCORE_home );
 
 
-
   BALL_to_GO_send ( BALL_to_go );
 
   BALL_DOWN_send ( BALL_down );
@@ -1372,15 +740,15 @@ void	PLACAR_DISPLAY_normal_serialize ()
 
   GAME_TIME_send ( GAME_TIME_min, GAME_TIME_seg );
 }
-//***********************************************************************
 
 
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/**
+ * Serializacao do estado de todos os displays
+ * do placar de acordo com a ordem
+ * de ligacao e cascateamento dos displays
+ * nos circuitos de comando dos mesmos com
+ * sobreposicao de PLAY CLOCK em BALL POSITION
+ */
 void	PLACAR_DISPLAY_swap_serialize ()
 {
   PLAY_CLOCK_send ( PLAY_CLOCK );
@@ -1405,15 +773,11 @@ void	PLACAR_DISPLAY_swap_serialize ()
 
   GAME_TIME_send ( GAME_TIME_min, GAME_TIME_seg );
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Atualizacao geral do estado dos displays do
+ * placar
+ */
 void	PLACAR_DISPLAY_refresh ()
 {
 	if ( !( PLAY_CLOCK_swap && PLAY_CLOCK_running_CHECK() ) )
@@ -1422,28 +786,22 @@ void	PLACAR_DISPLAY_refresh ()
 
 	else	PLACAR_DISPLAY_swap_serialize();
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Atualiza as tabelas de codificacao
+ * e o estado atual do placar "Main"
+ */
 void	PLACAR_MAIN_DISPLAY_refresh ()
 {
 #if	( Main_DISPLAY_ON == 1 )
 
-	DISPLAY_info.SEGM_code_TAB = (BYTE_PTR) Seven_SEG_code_M;	// Tabela de codificação dos segmentos do Display.
+	DISPLAY_info.SEGM_code_TAB = (BYTE_PTR) Seven_SEG_code_M;	// Tabela de codificacao dos segmentos do Display.
 
-	DISPLAY_info.TMO_code_TAB = (BYTE_PTR) TMO_code_TAB_M;		// Tabela com codificação do Timeout "Home/Guest".
+	DISPLAY_info.TMO_code_TAB = (BYTE_PTR) TMO_code_TAB_M;		// Tabela com codificacao do Timeout "Home/Guest".
 
-	DISPLAY_info.VANT_code_TAB = (BYTE_PTR) VANT_code_TAB_M;	// Tabela com codificação do "Vantage".
+	DISPLAY_info.VANT_code_TAB = (BYTE_PTR) VANT_code_TAB_M;	// Tabela com codificacao do "Vantage".
 
 	DISPLAY_info.polarity = Main_DISPLAY_pol;	// polaridade do Display (anodo/katodo comum).
-
-// - - - - - - - - - - - - - - - -
 
 	DISPLAY_info.SDOUT_pin = SDOUT_main;	// especifica pino "SDOUT" para o "Main".
 
@@ -1451,8 +809,6 @@ void	PLACAR_MAIN_DISPLAY_refresh ()
 
 	DISPLAY_info.PCLK_pin = PCLK_main;	// especifica pino "PCLK" para o "Main".
 
-//..................................................
-
 	PLACAR_DISPLAY_refresh ();
 
 	delayMicroseconds(10);
@@ -1461,28 +817,23 @@ void	PLACAR_MAIN_DISPLAY_refresh ()
 
 #endif
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Atualiza as tabelas de codificacao 
+ * e o estado atual dos displays 
+ * para o placar "Piloto"
+ */
 void	PLACAR_PILOT_DISPLAY_refresh ()
 {
 #if	( Pilot_DISPLAY_ON == 1 )
 
-	DISPLAY_info.SEGM_code_TAB = (BYTE_PTR) Seven_SEG_code_P;	// Tabela de codificação dos segmentos do Display.
+	DISPLAY_info.SEGM_code_TAB = (BYTE_PTR) Seven_SEG_code_P;	// Tabela de codificacao dos segmentos do Display.
 
-	DISPLAY_info.TMO_code_TAB = (BYTE_PTR) TMO_code_TAB_P;		// Tabela com codificação do Timeout "Home/Guest".
+	DISPLAY_info.TMO_code_TAB = (BYTE_PTR) TMO_code_TAB_P;		// Tabela com codificacao do Timeout "Home/Guest".
 
-	DISPLAY_info.VANT_code_TAB = (BYTE_PTR) VANT_code_TAB_P;	// Tabela com codificação do "Vantage".
+	DISPLAY_info.VANT_code_TAB = (BYTE_PTR) VANT_code_TAB_P;	// Tabela com codificacao do "Vantage".
 
 	DISPLAY_info.polarity = Pilot_DISPLAY_pol;	// polaridade do Display (anodo/katodo comum).
-
-// - - - - - - - - - - - - - - - -
 
 	DISPLAY_info.SDOUT_pin = SDOUT_piloto;	// especifica pino "SDOUT" para o "Piloto".
 
@@ -1490,8 +841,6 @@ void	PLACAR_PILOT_DISPLAY_refresh ()
 
 	DISPLAY_info.PCLK_pin = PCLK_piloto;	// especifica pino "PCLK" para o "Piloto".
 
-//..................................................
-
 	PLACAR_DISPLAY_refresh ();
 
 	delayMicroseconds(10);
@@ -1500,24 +849,12 @@ void	PLACAR_PILOT_DISPLAY_refresh ()
 
 #endif
 }
-//***********************************************************************
 
-
-
-
-//\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
-//
-//
-//
-//\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
-
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Atualiza o estado da flag de controle
+ * em memoria para display VIEW SET 
+ *  @param bool view Flag que indica o estado (1 ativo/ 0 inativo)
+ */
 void	DISPLAY_view_SET ( bool view )
 {
 	if (view)
@@ -1529,423 +866,297 @@ void	DISPLAY_view_SET ( bool view )
 		DISPLAY_VIEW_STS.VIEW_STS = 0;
 	}
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/* 
+ * Atualiza o estado da flag de controle 
+ * em memoria para o GAME TIME
+ *  @param bool view Flag que indica o estado (1 ativo/ 0 inativo)
+ */
 void	GAME_TIME_view_SET ( bool view )
 {
 	DISPLAY_VIEW_STS.GAME_TIME = view;
 }
-//***********************************************************************
 
 
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Atualiza o estado da flag de controle
+ * em memoria para o GAME QUARTER
+ *  @param bool view Flag que indica o estado (1 ativo/ 0 inativo)
+ */
 void	GAME_QUARTER_view_SET ( bool view )
 {
 	DISPLAY_VIEW_STS.GAME_quarter = view;
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Atualiza o estado da flag de controle
+ * em memoria para o BALL POSITION
+ *  @param bool view Flag que indica o estado (1 ativo/ 0 inativo)
+ */
 void	BALL_POSITION_view_SET ( bool view )
 {
 	DISPLAY_VIEW_STS.BALL_pos = view;
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Atualiza o estado da flag de controle
+ * em memoria para o BALL DOWN
+ *  @param bool view Flag que indica o estado (1 ativo/ 0 inativo)
+ */
 void	BALL_DOWN_view_SET ( bool view )
 {
 	DISPLAY_VIEW_STS.BALL_down = view;
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
+/*
+ * Atualiza o estado da flag de controle
+ * em memoria para o BALL TO GO
+ *  @param bool view Flag que indica o estado (1 ativo/ 0 inativo)
+ */
 
 void	BALL_TO_GO_view_SET ( bool view )
 {
 	DISPLAY_VIEW_STS.BALL_to_go = view;
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Atualiza o estado da flag de controle
+ * em memoria para o SCORE HOME
+ *  @param bool view Flag que indica o estado (1 ativo/ 0 inativo)
+ */
 void	SCORE_HOME_view_SET ( bool view )
 {
 	DISPLAY_VIEW_STS.SCORE_home = view;
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Atualiza o estado da flag de controle
+ * em memoria para o VANTAGE HOME
+ *  @param bool view Flag que indica o estado (1 ativo/ 0 inativo)
+ */
 void	VANT_HOME_view_SET ( bool view )
 {
 	DISPLAY_VIEW_STS.VANT_home = view;
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Atualiza o estado da flag de controle
+ * em memoria para o TIMEOUT HOME
+ *  @param bool view Flag que indica o estado (1 ativo/ 0 inativo)
+ */
 void	TMOUT_HOME_view_SET ( bool view )
 {
 	DISPLAY_VIEW_STS.TMOUT_home = view;
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Atualiza o estado da flag de controle
+ * em memoria para o SCORE GUEST
+ *  @param bool view Flag que indica o estado (1 ativo/ 0 inativo)
+ */
 void	SCORE_GUEST_view_SET ( bool view )
 {
 	DISPLAY_VIEW_STS.SCORE_guest = view;
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Atualiza o estado da flag de controle
+ * em memoria para o VANTAGE GUEST
+ *  @param bool view Flag que indica o estado (1 ativo/ 0 inativo)
+ */
 void	VANT_GUEST_view_SET ( bool view )
 {
 	DISPLAY_VIEW_STS.VANT_guest = view;
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Atualiza o estado da flag de controle
+ * em memoria para o TIMEOUT GUEST
+ *  @param bool view Flag que indica o estado (1 ativo/ 0 inativo)
+ */
 void	TMOUT_GUEST_view_SET ( bool view )
 {
 	DISPLAY_VIEW_STS.TMOUT_guest = view;
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Atualiza o estado da flag de controle
+ * em memoria para o PLAY CLOCK
+ *  @param bool view Flag que indica o estado (1 ativo/ 0 inativo)
+ */
 void	PLAY_CLOCK_view_SET ( bool view )
 {
 	DISPLAY_VIEW_STS.PLAY_CLOCK = view;
 }
-//***********************************************************************
 
+/*
+ * TODO: IMPLEMENTAR
+ */
+void	DISPLAY_BLANK_refresh (){}
 
-
-
-//***********************************************************************
-//
-//=======================================================================
-
-void	DISPLAY_BLANK_refresh ()
-{
-
-
-}
-//***********************************************************************
-
-
-
-
-//\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
-//
-//
-//
-//\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
-
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Altera o fator de conversao
+ * de segundos
+ */
 #if	( SIMUL == 0 )
-
-#define	Second_ms	1000
-
+  #define	Second_ms	1000
 #else
-
-#define	Second_ms	50
-
+  #define	Second_ms	50
 #endif
 
-//***********************************************************************
-
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Estrutura para controle 
+ * de cronometro
+ */
 struct	CRONO_type
 {
-	uint periodo_ms;	// período de disparo do cronômetro.
+	uint periodo_ms;	// periodo de disparo do cronometro.
 
-	bool trigger;		// indica que ocorreu um evento do cronômetro.
+	bool trigger;		// indica que ocorreu um evento do cronometro.
 
-	bool run;		// habilita cadência do cronômetro.
+	bool run;		// habilita cadencia do cronometro.
 
-	void (*CRONO_notify) ();	// função para informe da cadência.
+	void (*CRONO_notify) ();	// funcao para informe da cadencia.
 
-	ulong registro_ms;	// uso interno para detecção de evento.
+	ulong registro_ms;	// uso interno para deteccao de evento.
 };
-//***********************************************************************
 
+/*
+ * NOOP
+ */
+void	CRONO_DUMMY_notify (){}
 
-
-
-//***********************************************************************
-//
-//=======================================================================
-
-void	CRONO_DUMMY_notify ()
-{
-}
-//***********************************************************************
-
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Inicializa um cronometro
+ *  @param CRONO_type *CRONO_PTR Referencia para a estrutura inicializada
+ *  @param uint periodo_ms Cadencia do cronometro
+ */
 void	CRONO_init ( struct CRONO_type *CRONO_PTR, uint periodo_ms )
 {
-	(*CRONO_PTR).periodo_ms = periodo_ms;	// seta o período de disparo do cronômetro.
+	(*CRONO_PTR).periodo_ms = periodo_ms;	// seta o periodo de disparo do cronometro.
 
 	(*CRONO_PTR).trigger = false;		// reseta indicador de evento.
 
-	(*CRONO_PTR).run = false;		// mantém cronômetro parado.
+	(*CRONO_PTR).run = false;		// mantem cronometro parado.
 
-	(*CRONO_PTR).registro_ms = millis();	// reseta referência para
-						// atualização do cronômetro.
+	(*CRONO_PTR).registro_ms = millis();	// reseta referencia para
+						// atualizacao do cronometro.
 
-	(*CRONO_PTR).CRONO_notify = CRONO_DUMMY_notify;	// "desliga" informe da cadência.
+	(*CRONO_PTR).CRONO_notify = CRONO_DUMMY_notify;	// "desliga" informe da cadencia.
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Atribui uma funcao para notificacao de cadencia
+ * do cronometro
+ *  @param CRONO_type *CRONO_PRT Referencia do cronometro
+ *  @param (*CRONO_notify)() Funcao a ser invocada para notificacao 
+ */
 void	CRONO_notify_ON ( struct CRONO_type *CRONO_PTR, void (*CRONO_notify) () )
 {
-	(*CRONO_PTR).CRONO_notify = CRONO_notify;	// seta função para
-							// informe da cadência.
+	(*CRONO_PTR).CRONO_notify = CRONO_notify;	// seta funcao para
+							// informe da cadencia.
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Atribui uma funcao NOOP para simular o desligamento
+ * de notificacoes de cadencia do cronometro
+ *  @param CRONO_type *CRONO_PTR Referencia para o cronometro
+ */
 void	CRONO_notify_OFF ( struct CRONO_type *CRONO_PTR )
 {
 	(*CRONO_PTR).CRONO_notify = CRONO_DUMMY_notify;	// "desliga" informe
-							// da cadência.
+							                                    // da cadencia.
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Coloca o cronometro no estado de pausa
+ *  @param CRONO_type *CRONO_PTR Referencia para o cronometro
+ */
 void	CRONO_stop ( struct CRONO_type *CRONO_PTR )
 {
-	(*CRONO_PTR).run = false;	// mantém cronômetro parado.
+	(*CRONO_PTR).run = false;	// mantem cronometro parado.
 
 	(*CRONO_PTR).trigger = false;	// reseta indicador de evento.
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Coloca o cronometro no estado de execucao
+ *  @param CRONO_type *CRONO_PTR Referencia para o cronometro
+ */
 void	CRONO_run ( struct CRONO_type *CRONO_PTR )
 {
-	(*CRONO_PTR).run = true;	// libera o cronômetro.
+	(*CRONO_PTR).run = true;	// libera o cronometro.
 
 	(*CRONO_PTR).trigger = false;	// reseta indicador de evento.
 
-	(*CRONO_PTR).registro_ms = millis();	// reseta referência para
-						// atualização do cronômetro.
+	(*CRONO_PTR).registro_ms = millis();	// reseta referencia para
+						                            // atualizacao do cronometro.
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Verifica o estado da execucao do cronometro
+ *  @param CRONO_type *CRONO_PTR Referencia para o cronometro
+ *  @returns True caso esteja em execucao False caso contrario
+ */
 bool	CRONO_running_CHECK ( struct CRONO_type *CRONO_PTR )
 {
 	return ( (*CRONO_PTR).run );
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Notifica uma cadencia do cronometro
+ *  @param CRONO_type *CRONO_PTR Referencia para o cronometro
+ */
 void	CRONO_detected ( struct CRONO_type *CRONO_PTR )
 {
 	(*CRONO_PTR).trigger = false;	// reseta indicador de evento.
 
-	(*CRONO_PTR).CRONO_notify ();	// informa a cadência do cronômetro.
+	(*CRONO_PTR).CRONO_notify ();	// informa a cadencia do cronometro.
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Verica a flag de controle de disparo do cronometro
+ *  @param CRONO_type *CRONO_PTR Referencia para o cronometro
+ */
 bool	CRONO_trigger_CHECK ( struct CRONO_type *CRONO_PTR )
 {
 	return ( (*CRONO_PTR).trigger );
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Atualiza o estado de um cronometro
+ * de acordo com o relogio da placa
+ *  @param CRONO_type *CRONO_PTR Referencia para um cronometro
+ */
 void	CRONO_atualize ( struct CRONO_type *CRONO_PTR )
 {
-//--------------------------------------------------
-ulong atual_Millis;
-//--------------------------------------------------
+  ulong atual_Millis;
 
 	if ( (*CRONO_PTR).run )
 	{
-		atual_Millis = millis();	// obtém valor atual do "millis".
+		atual_Millis = millis();	// obtem valor atual do "millis".
 
 		if ( ( atual_Millis - (*CRONO_PTR).registro_ms ) >= (*CRONO_PTR).periodo_ms )
 		{
 			(*CRONO_PTR).trigger = true;	// se ocorreu um "trigger", indica isso.
 
-			(*CRONO_PTR).registro_ms = atual_Millis;	// seta nova referência para
-		}							// próxima atualização.
+			(*CRONO_PTR).registro_ms = atual_Millis;	// seta nova referencia para
+		}							                              // próxima atualizacao.
 	}
 	else
 	{
 		(*CRONO_PTR).trigger = false;		// reseta indicador de evento.
 
-		(*CRONO_PTR).registro_ms = millis();	// reseta referência para
-	}						// atualização do cronômetro.
+		(*CRONO_PTR).registro_ms = millis();	// reseta referencia para
+	}						                            // atualizacao do cronometro.
 }
-//***********************************************************************
 
 
-
-
-//\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
-//
-//
-//
-//\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
-
-
-
-
-//***********************************************************************
-//	Definição de um contador para controle do cadenciamento de
-//	operações "HMI" (Interface Homem/Máquina) neste Sistema:
-//=======================================================================
-
+/**
+ * Definicao de um contador para controle do cadenciamento de
+ * operacoes "HMI" (Interface Homem/Maquina) neste Sistema:
+ */
 WORD	SYS_COUNTER_100ms = 0;
-
-//***********************************************************************
-
-
-
-
-//***********************************************************************
-//
-//=======================================================================
 
 void	SYS_COUNTER_100ms_increment ()
 {
@@ -1956,72 +1167,48 @@ void	SYS_COUNTER_100ms_increment ()
 		SYS_COUNTER_100ms = 0;
 	}
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * taxa de atualizacao de cronometro 
+ */
 #if	( SIMUL == 0 )
-
-#define	SYS_100ms_CRONO_RATE	( Second_ms/10 )
+  
+  #define	SYS_100ms_CRONO_RATE	( Second_ms/10 )
 
 #else
 
-#define	SYS_100ms_CRONO_RATE	( Second_ms/10 )
+  #define	SYS_100ms_CRONO_RATE	( Second_ms/10 )
 
 #endif
 
-//***********************************************************************
+/*
+ * Definicao de um cronometro de 100ms para cadenciamento de
+ * operacoes "HMI" (Interface Homem/Maquina) neste Sistema:
+ */
+CRONO_type	SYS_100ms_CRONO;	// cronometro para cadenciamento
+					                    // de operacoes "HMI" no Sistema.
 
 
-
-
-//***********************************************************************
-//	Definição de um cronômetro de 100ms para cadenciamento de
-//	operações "HMI" (Interface Homem/Máquina) neste Sistema:
-//=======================================================================
-
-CRONO_type	SYS_100ms_CRONO;	// cronômetro para cadenciamento
-					// de operações "HMI" no Sistema.
-//***********************************************************************
-
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Inicializa o cronometro HMI 100ms
+ */
 void	SYS_100ms_CRONO_startup ()
 {
 	CRONO_init ( &SYS_100ms_CRONO, SYS_100ms_CRONO_RATE );
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Coloca o cronometro 100ms HMI em execucao
+ */
 void	SYS_100ms_CRONO_run ()
 {
 	CRONO_run ( &SYS_100ms_CRONO );
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Controla a cadencia do cronometro 
+ * 100ms HMI
+ */
 void	SYS_100ms_CRONO_cadence ()
 {
 	CRONO_atualize ( &SYS_100ms_CRONO );
@@ -2033,105 +1220,62 @@ void	SYS_100ms_CRONO_cadence ()
 		CRONO_detected ( &SYS_100ms_CRONO );
 	}
 }
-//***********************************************************************
 
-
-
-
-//\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
-//
-//
-//
-//\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
-
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Taxa de atualizacao dos displays
+ */
 #if	( SIMUL == 0 )
 
-#define	DISPLAY_refresh_RATE	( Second_ms/4 )
+  #define	DISPLAY_refresh_RATE	( Second_ms/4 )
 
 #else
 
-#define	DISPLAY_refresh_RATE	( Second_ms/4 )
+  #define	DISPLAY_refresh_RATE	( Second_ms/4 )
 
 #endif
 
-//***********************************************************************
-
-
-
-
-//***********************************************************************
-//
-//=======================================================================
 
 bool	DISPLAY_refresh_force = false;
 
-//***********************************************************************
+/*
+ *	Definicao de um cronometro para a taxa de atualizacao do
+ *	Display.
+ */
+CRONO_type	DISPLAY_refresh_CRONO;	// cronometro para temporizacao
+					                          // da atualizacao do Display.
 
 
-
-
-//***********************************************************************
-//	Definição de um cronômetro para a taxa de atualização do
-//	Display.
-//=======================================================================
-
-CRONO_type	DISPLAY_refresh_CRONO;	// cronômetro para temporização
-					// da atualização do Display.
-//***********************************************************************
-
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Inicializa o cronometro de taxa de atualizacao do
+ * display
+ */
 void	DISPLAY_refresh_startup ()
 {
 	CRONO_init ( &DISPLAY_refresh_CRONO, DISPLAY_refresh_RATE );
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Pausa o cronometro de taxa de atualizacao do
+ * display
+ */
 void	DISPLAY_refresh_stop ()
 {
 	CRONO_stop ( &DISPLAY_refresh_CRONO );
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Coloca o cronometro de taxa de atualizacao 
+ * de display em estado de execucao
+ */
 void	DISPLAY_refresh_run ()
 {
 	CRONO_run ( &DISPLAY_refresh_CRONO );
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Controla a cadencia do cronometro
+ * de taxa de atualizacao de display
+ */
 void	DISPLAY_refresh_cadence ()
 {
 	CRONO_atualize ( &DISPLAY_refresh_CRONO );
@@ -2143,15 +1287,12 @@ void	DISPLAY_refresh_cadence ()
 		CRONO_detected ( &DISPLAY_refresh_CRONO );
 	}
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Atualiza o estado dos displays
+ * de acordo com as configuracao
+ * do cronometro de taxa de atualizacao
+ */
 void	DISPLAY_refresh_make ()
 {
 	if ( DISPLAY_refresh_force )
@@ -2165,113 +1306,73 @@ void	DISPLAY_refresh_make ()
 		PLACAR_MAIN_DISPLAY_refresh ();
 	}
 }
-//***********************************************************************
 
+/*
+ *	Definicao de um cronometro para a cadencia do "Play Clock":
+ */
+CRONO_type	PLAY_CLOCK_CRONO;	// cronometro para cadencia do
+					                    // "Play Clock".
 
-
-
-//\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
-//
-//
-//
-//\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
-
-
-
-
-//***********************************************************************
-//	Definição de um cronômetro para a cadência do "Play Clock":
-//=======================================================================
-
-CRONO_type	PLAY_CLOCK_CRONO;	// cronômetro para cadência do
-					// "Play Clock".
-//***********************************************************************
-
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Inicializa o cronometro de cadencia do "Play clock"
+ */
 void	PLAY_CLOCK_startup ()
 {
 	CRONO_init ( &PLAY_CLOCK_CRONO, Second_ms );
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Registra a funcao a ser invocada pelas
+ * notificacoes de cadencia do cronometro
+ * de cadencia do "Play clock"
+ */
 void	PLAY_CLOCK_notify_ON ( void (*PLAY_CLOCK_notify) () )
 {
 	CRONO_notify_ON ( &PLAY_CLOCK_CRONO, PLAY_CLOCK_notify );
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Cancela o registro da funcao de noticacao
+ * do cronometro de cadencia do "Play clock"
+ */
 void	PLAY_CLOCK_notify_OFF ()
 {
 	CRONO_notify_OFF ( &PLAY_CLOCK_CRONO );
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Pausa o cronometro de cadencia
+ * do "Play clock"
+ */
 void	PLAY_CLOCK_stop ()
 {
 	CRONO_stop ( &PLAY_CLOCK_CRONO );
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Coloca o cronometro de cadencia
+ * do "Play clock" em estado de
+ * execucao
+ */
 void	PLAY_CLOCK_run ()
 {
 	CRONO_run ( &PLAY_CLOCK_CRONO );
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Verifica o estado de execucao do 
+ * cronometro de cadencia do "Play clock"
+ *  @returns True caso este esteja em execucao e False caso contrario
+ */
 bool	PLAY_CLOCK_running_CHECK ()
 {
 	return ( CRONO_running_CHECK ( &PLAY_CLOCK_CRONO ) );
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Controla a cadencia do cronometro
+ * de cadencia do "Play clock"
+ */
 void	PLAY_CLOCK_cadence ()
 {
 	if ( PLAY_CLOCK != 0 )
@@ -2287,112 +1388,44 @@ void	PLAY_CLOCK_cadence ()
 	}
 	else	CRONO_stop ( &PLAY_CLOCK_CRONO );
 }
-//***********************************************************************
 
 
-
-
-//\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
-//
-//
-//
-//\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
-
-
-
-
-//***********************************************************************
-//	Definição de um cronômetro para a cadência do "Game Time":
-//=======================================================================
-
-CRONO_type	GAME_TIME_CRONO;	// cronômetro para cadência do
-					// "Game Time".
-//***********************************************************************
-
-
-
-
-//***********************************************************************
-//
-//=======================================================================
+/*
+ * Definicao de um cronometro para a cadencia do "Game Time"
+ * e suas funcoes
+ */
+CRONO_type	GAME_TIME_CRONO;	// cronometro para cadencia do
+					                    // "Game Time".
 
 void	GAME_TIME_startup ()
 {
 	CRONO_init ( &GAME_TIME_CRONO, Second_ms );
 }
-//***********************************************************************
-
-
-
-
-//***********************************************************************
-//
-//=======================================================================
 
 void	GAME_TIME_notify_ON ( void (*GAME_TIME_notify) () )
 {
 	CRONO_notify_ON ( &GAME_TIME_CRONO, GAME_TIME_notify );
 }
-//***********************************************************************
-
-
-
-
-//***********************************************************************
-//
-//=======================================================================
 
 void	GAME_TIME_notify_OFF ()
 {
 	CRONO_notify_OFF ( &GAME_TIME_CRONO );
 }
-//***********************************************************************
-
-
-
-
-//***********************************************************************
-//
-//=======================================================================
 
 void	GAME_TIME_stop ()
 {
 	CRONO_stop ( &GAME_TIME_CRONO );
 }
-//***********************************************************************
-
-
-
-
-//***********************************************************************
-//
-//=======================================================================
 
 void	GAME_TIME_run ()
 {
 	CRONO_run ( &GAME_TIME_CRONO );
 }
-//***********************************************************************
-
-
-
-
-//***********************************************************************
-//
-//=======================================================================
 
 bool	GAME_TIME_running_CHECK ()
 {
 	return ( CRONO_running_CHECK ( &GAME_TIME_CRONO ) );
 }
-//***********************************************************************
-
-
-
-
-//***********************************************************************
-//
-//=======================================================================
 
 void	GAME_TIME_cadence ()
 {
@@ -2418,106 +1451,54 @@ void	GAME_TIME_cadence ()
 	}
 	else	CRONO_stop ( &GAME_TIME_CRONO );
 }
-//***********************************************************************
 
-
-
-
-//\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
-//
-//
-//
-//\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
-
-
-
-
-//***********************************************************************
-//	Definição do caracter de finalização de um comando:
-//=======================================================================
-
+/*
+ * Definicao do caracter de finalizacao de um comando:
+ */
 #if	( SIMUL == 0 )
 
-#define	CMD_end	0x0A	// caracter de finalização de comando = "line feed".
+  #define	CMD_end	0x0A	// caracter de finalizacao de comando = "line feed".
 
 #else
 
-#define	CMD_end	'.'	// caracter de finalização de comando = "ponto".
+  #define	CMD_end	'.'	// caracter de finalizacao de comando = "ponto".
 
 #endif
 
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
-#define	CMD_no_reply	0	// sem resposta aos comandos recebidos.
-
+#define	CMD_no_reply	0	  // sem resposta aos comandos recebidos.
 #define	CMD_full_reply	1	// resposta "completa" aos comandos recebidos.
-
 #define	CMD_code_reply	2	// resposta "codificada" aos comandos recebidos.
-
-//-----------------------------------------------------------------------
 
 //BYTE	CMD_reply = CMD_no_reply;	// indica o tipo de resposta aos
 BYTE	CMD_reply = CMD_full_reply;	// indica o tipo de resposta aos
-					// comandos recebidos.
-//***********************************************************************
-
-
-
-
-//***********************************************************************
-//
-//=======================================================================
+					                        // comandos recebidos.
 
 typedef	bool (*CMD_func_PTR) ( BYTE_PTR CMD_data, BYTE index );
 
-//***********************************************************************
-
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/**
+ * Dummy command
+ * Emulacao de comando
+ */
 bool	DUMMY_CMD ( BYTE_PTR CMD_data, BYTE index )
 {
 	return (true);
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
-#define	CMD_size 10	// máximo de caracteres em um comando.
-
+/*
+ * Definicoes do buffer de comandos
+ */
+#define	CMD_size 10	// maximo de caracteres em um comando.
 BYTE	CMD_BUFF [CMD_size];	// Buffer de Comandos recebidos.
+BYTE	CMD_BUFF_idx;	// posicao atual no Buffer de Comandos.
 
-BYTE	CMD_BUFF_idx;	// posição atual no Buffer de Comandos.
-
-//-----------------------------------------------------------------------
 
 CMD_func_PTR SYS_CMD_PTR;	// Ponteiro para o Comando a ser executado.
 
-//***********************************************************************
-
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Estrutura para mapeamento entre 
+ * tipo de comando e funcao de comando
+ */
 struct	CMD_LOC_info
 {
 	char CMD_code;
@@ -2525,23 +1506,16 @@ struct	CMD_LOC_info
 	CMD_func_PTR	CMD_func;
 };
 
-//-----------------------------------------------------------------------
-
 typedef	struct	CMD_LOC_info	CMD_LOC_type;
 
-//-----------------------------------------------------------------------
 
 #define	CMD_LIST_end_mark	1	// marcador do fim de uma lista
-					// de comandos.
-//***********************************************************************
+					                  // de comandos.
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Converte um caracter ASCII maiusculo
+ * para minusculo
+ */
 BYTE	LOW_CASE_conv ( BYTE ASCII_char )
 {
 	if ( ( ASCII_char >= 'A' ) && ( ASCII_char <= 'Z' ) )
@@ -2551,20 +1525,13 @@ BYTE	LOW_CASE_conv ( BYTE ASCII_char )
 
 	return (ASCII_char);
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Limpa o buffer de comandos
+ */
 void	CMD_BUFF_reset ()
 {
-//--------------------------------------------------
-BYTE i;
-//--------------------------------------------------
+  BYTE i;
 
 	CMD_BUFF_idx = 0;
 
@@ -2573,15 +1540,11 @@ BYTE i;
 		CMD_BUFF [i] = 0;
 	}
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Adiciona um caracter ao buffer de
+ * comandos
+ */
 void	CMD_BUFF_ins ( BYTE new_char )
 {
 	if ( CMD_BUFF_idx < CMD_size )
@@ -2591,21 +1554,17 @@ void	CMD_BUFF_ins ( BYTE new_char )
 		CMD_BUFF_idx++;
 	}
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Le um caracter de comando 
+ * da interface serial
+ *  @returns bool True caso seja o caracter de fim de comando
+ *                False caso contrario
+ */
 bool	COMMAND_get ()
 {
-//--------------------------------------------------
-bool CMD_sts;
-BYTE rcv_char;
-//--------------------------------------------------
+  bool CMD_sts;
+  BYTE rcv_char;
 
 	CMD_sts = false;
 
@@ -2625,22 +1584,19 @@ BYTE rcv_char;
 
 	return (CMD_sts);
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Localiza o comando a ser executado de acordo 
+ * com o tipo de comando enviado memorizado
+ * no buffer de comandos
+ *  @returns bool True caso o comando tenha sido localizado
+ *                False caso contrario
+ */
 bool	COMMAND_decode ( struct CMD_LOC_info *CMD_list_PTR )
 {
-//--------------------------------------------------
-char CMD_code, LOC_code;
-BYTE CMD_idx;
-bool locate;
-//--------------------------------------------------
+  char CMD_code, LOC_code;
+  BYTE CMD_idx;
+  bool locate;
 
 	CMD_code = CMD_BUFF [0];
 
@@ -2667,28 +1623,22 @@ bool locate;
 
 	return (locate);
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Envia quebras de linha pela
+ * interface serial
+ *  @param BYTE n Numero de quebras de linha
+ *                a ser enviado
+ */
 void	SERIAL_newline_send ( BYTE n )
 {
 	for ( ; n > 0; n-- ) Serial.println ();
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Resposta de falha a um comando 
+ * enviado
+ */
 void	COMMAND_FAIL_reply ()
 {
 	if ( CMD_reply == CMD_full_reply )	// modo resposta "completa":
@@ -2701,15 +1651,10 @@ void	COMMAND_FAIL_reply ()
 		ROM_SERIAL_LF_print ("#0");
 	}
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Resposta de sucesso a um comando enviado
+ */
 void	COMMAND_OK_reply ()
 {
 	if ( CMD_reply == CMD_full_reply )	// modo resposta "completa":
@@ -2722,32 +1667,25 @@ void	COMMAND_OK_reply ()
 		ROM_SERIAL_LF_print ("#1");
 	}
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Executa o comando interpretado
+ * pelo sistema recebido
+ * via interface serial
+ */
 void	COMMAND_exec ()
 {
 	if ( SYS_CMD_PTR ( CMD_BUFF, 1 ) )	// executa o comando.
 
-		COMMAND_OK_reply ();		// réplica para sucesso.
+		COMMAND_OK_reply ();		// replica para sucesso.
 
-	else	COMMAND_FAIL_reply ();		// réplica para erro.
+	else	COMMAND_FAIL_reply ();		// replica para erro.
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Processa comandos recebidos
+ * via interface serial
+ */
 void	COMMAND_proc ( struct CMD_LOC_info *CMD_list_PTR )
 {
 	if ( COMMAND_get () )
@@ -2761,29 +1699,15 @@ void	COMMAND_proc ( struct CMD_LOC_info *CMD_list_PTR )
 		CMD_BUFF_reset ();
 	}
 }
-//***********************************************************************
 
-
-
-
-//\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
-//
-//
-//
-//\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
-
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Converte um byte ASCII para o padrao BCD
+ *  @returns bool True caso seja realizada a conversao
+ *                False caso contrario
+ */
 bool	ASCII_to_BCD_8 ( BYTE *code )
 {
-//--------------------------------------------------
-bool is_BCD = false;
-//--------------------------------------------------
+  bool is_BCD = false;
 
 	if ( ( *code >= 0x30 ) && ( *code <= 0x39 ) )
 	{
@@ -2794,21 +1718,19 @@ bool is_BCD = false;
 
 	return (is_BCD);
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Le o proximo byte BCD nos dados de um comando
+ *  @param BYTE_PTR CMD_data referencia para os dados do comando
+ *  @param BYTE *index referencia para indice de inicio da verificacao 
+ *  @param BYTE *BCD_8 referencia (buffer) para armazenar o byte encontrado 
+ *  @returns bool True caso exista um byte BCD nos dados
+ *                False caso contrario
+ */
 bool	BCD_8_NEXT_get ( BYTE_PTR CMD_data, BYTE *index, BYTE *BCD_8 )
 {
-//--------------------------------------------------
-BYTE VAL_1, VAL_2;
-bool is_BCD = false;
-//--------------------------------------------------
+  BYTE VAL_1, VAL_2;
+  bool is_BCD = false;
 
 	VAL_1 = CMD_data [*index];
 
@@ -2832,21 +1754,19 @@ bool is_BCD = false;
 
 	return (is_BCD);
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Verifica se o indice de referencia
+ * aponta para o byte de final de comando
+ *  @param BYTE_PTR CMD_data Referencia para o buffer com dados do comando
+ *  @param BYTE index Indice de referencia para a posicao do buffer
+ *  @returns bool True caso o byte na posicao seja fim de comando
+ *                False caso contrario
+ */
 bool	END_CMD_CHK ( BYTE_PTR CMD_data, BYTE index )
 {
-//--------------------------------------------------
-BYTE VAL_1;
-bool OK = false;
-//--------------------------------------------------
+  BYTE VAL_1;
+  bool OK = false;
 
 	VAL_1 = CMD_data [index];
 
@@ -2857,50 +1777,30 @@ bool OK = false;
 
 	return (OK);
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Definicao dos limites 
+ * relacionados a QUARTER
+ */
 #define QUARTER_MIN	1
-
 #define QUARTER_MAX	4
 
-//***********************************************************************
-
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Verifica se uma valor esta dentro
+ * dos limites de QUARTER
+ *  @param BYTE value Valor a ser testado
+ *  @returns bool True caso esteja dentro dos limites
+ *                False caso contrario
+ */
 bool	QUARTER_value_CHK ( BYTE value )
 {
-//--------------------------------------------------
-bool OK = false;
-//--------------------------------------------------
-
-	if ( ( value >= QUARTER_MIN ) && ( value <= QUARTER_MAX ) )
-	{
-		OK = true;
-	}
-
-	return (OK);
+  return ( value >= QUARTER_MIN ) && ( value <= QUARTER_MAX );
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Escreve na serial de comando  o GAME QUARTER
+ *  @param BYTE value Valor do GAME QUARTER
+ */
 void	QUARTER_inform ( BYTE value )
 {
 	if ( CMD_reply == CMD_full_reply )	// modo resposta "completa":
@@ -2914,21 +1814,19 @@ void	QUARTER_inform ( BYTE value )
 		Serial.println ( value, DEC );
 	}
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//	Comando "qX": especifica o "QUARTER" atual.
-//=======================================================================
-
+/*
+ *	Execucao do comando "qX"
+ *  Especifica o "QUARTER" atual.
+ *   @param BYTE_PTR CMD_data Buffer com dados do comando
+ *   @param BYTE index Posicao atual de leitura do buffer
+ *   @returns bool True caso a execucao seja bem sucedida
+ *                 False caso contrario
+ */
 bool	qX_CMD ( BYTE_PTR CMD_data, BYTE index )
 {
-//--------------------------------------------------
-BYTE VAL_1;
-bool OK = false;
-//--------------------------------------------------
+  BYTE VAL_1;
+  bool OK = false;
 
 	if ( BCD_8_NEXT_get ( CMD_data, &index, &VAL_1 ) )
 	{
@@ -2949,15 +1847,10 @@ bool OK = false;
 
 	return (OK);
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Escreve na serial de comando  o GUEST VANTAGE
+ */
 void	GUEST_VANTAGE_inform ()
 {
 	if ( CMD_reply == CMD_full_reply )	// modo resposta "completa":
@@ -2969,15 +1862,10 @@ void	GUEST_VANTAGE_inform ()
 		ROM_SERIAL_LF_print ("#lv");
 	}
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Escreve na serial de comando  o HOME VANTAGE
+ */
 void	HOME_VANTAGE_inform ()
 {
 	if ( CMD_reply == CMD_full_reply )	// modo resposta "completa":
@@ -2989,20 +1877,20 @@ void	HOME_VANTAGE_inform ()
 		ROM_SERIAL_LF_print ("#lc");
 	}
 }
-//***********************************************************************
 
 
-
-
-//***********************************************************************
-//	Comando "lt": troca a Vantagem atual.
-//=======================================================================
+/*
+ *	Execucao do comando "lt"
+ *  Troca a Vantagem atual.
+ *   @param BYTE_PTR Buffer com os dados do comando
+ *   @pararm BYTE index Posicao de leitura do buffer
+ *   @returns bool True caso a execucao seja bem sucedida
+ *                 False caso contrario
+ */
 
 bool	lt_CMD ( BYTE_PTR CMD_data, BYTE index )
 {
-//--------------------------------------------------
-bool OK = false;
-//--------------------------------------------------
+  bool OK = false;
 
 	if ( END_CMD_CHK ( CMD_data, index ) )
 	{
@@ -3024,20 +1912,19 @@ bool OK = false;
 
 	return (OK);
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//	Comando "lv": seleciona a "Vantagem visitante".
-//=======================================================================
+/*
+ *	Execucao do comando "lv"
+ *  Seleciona a "Vantagem visitante".
+ *   @param BYTE_PTR CMD_data Buffer com dados do comando
+ *   @param BYTE index Posicao de leitura do buffer
+ *   @returns bool True caso a execucao seja bem sucedida
+ *                 False caso contrario
+ */
 
 bool	lv_CMD ( BYTE_PTR CMD_data, BYTE index )
 {
-//--------------------------------------------------
-bool OK = false;
-//--------------------------------------------------
+  bool OK = false;
 
 	if ( END_CMD_CHK ( CMD_data, index ) )
 	{
@@ -3050,20 +1937,19 @@ bool OK = false;
 
 	return (OK);
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//	Comando "lc": seleciona a "Vantagem casa".
-//=======================================================================
+/*
+ *	Execucao do comando "lc": 
+ *  Seleciona a "Vantagem casa".
+ *   @param BYTE_PTR CMD_data Buffer com dados do comando
+ *   @param BYTE index Posicao de leitura do buffer
+ *   @returns bool True caso a excucao seja bem sucedida
+ *                False caso contrario
+ */
 
 bool	lc_CMD ( BYTE_PTR CMD_data, BYTE index )
 {
-//--------------------------------------------------
-bool OK = false;
-//--------------------------------------------------
+  bool OK = false;
 
 	if ( END_CMD_CHK ( CMD_data, index ) )
 	{
@@ -3076,50 +1962,29 @@ bool OK = false;
 
 	return (OK);
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Definicao dos limites para TIMEOUT
+ */
 #define Timeout_MIN	0
-
 #define Timeout_MAX	3
 
-//***********************************************************************
-
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Verifica se um valor esta dentro
+ * dos limites de TIMEOUT
+ *  @param BYTE value Valor a ser verificado
+ *  @returns bool True caso o valor esteja dentro dos limites
+ *                False caso contrario
+ */
 bool	Timeout_value_CHK ( BYTE value )
 {
-//--------------------------------------------------
-bool OK = false;
-//--------------------------------------------------
-
-	if ( ( value >= Timeout_MIN ) && ( value <= Timeout_MAX ) )
-	{
-		OK = true;
-	}
-
-	return (OK);
+  return ( value >= Timeout_MIN ) && ( value <= Timeout_MAX );
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Escreve na serial de comando  um valor de TIMEOUT
+ *  @param BYTE value Valor a ser escrito
+ */
 void	TIMEOUT_guest_inform ( BYTE value )
 {
 	if ( CMD_reply == CMD_full_reply )	// modo resposta "completa":
@@ -3133,15 +1998,11 @@ void	TIMEOUT_guest_inform ( BYTE value )
 		Serial.println ( value, DEC );
 	}
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Escreve na serial de comando  um valor de TIMEOUT HOME
+ *  @param BYTE value Valor a ser escrito
+ */
 void	TIMEOUT_home_inform ( BYTE value )
 {
 	if ( CMD_reply == CMD_full_reply )	// modo resposta "completa":
@@ -3155,20 +2016,18 @@ void	TIMEOUT_home_inform ( BYTE value )
 		Serial.println ( value, DEC );
 	}
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//	Comando "tc-": decrementa o "TIMEOUT visitante".
-//=======================================================================
-
+/*
+ * Execucao do comando "tv-": 
+ * Decrementa o "TIMEOUT visitante".
+ *  @param BYTE_PTR CMD_data Buffer com dados do comando   
+ *  @param BYTE index Posicao de leitura do buffer
+ *  @returns bool True caso a execucao seja bem sucedida
+ *                False caso contrario
+ */
 bool	tv_DECR_CMD ( BYTE_PTR CMD_data, BYTE index )
 {
-//--------------------------------------------------
-bool OK = false;
-//--------------------------------------------------
+  bool OK = false;
 
 	if ( END_CMD_CHK ( CMD_data, index ) )
 	{
@@ -3184,20 +2043,18 @@ bool OK = false;
 
 	return (OK);
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//	Comando "tc-": decrementa o "TIMEOUT casa".
-//=======================================================================
-
+/*
+ *	Execuca o comando "tc-": 
+ *  Decrementa o "TIMEOUT casa".
+ *    @param BYTE_PTR CMD_data Buffer com dados do comando
+ *    @param BYTE index Posicao de leitura do buffer
+ *    @returns bool True caso a execucao seja bem sucedida
+ *                  False caso contrario
+ */
 bool	tc_DECR_CMD ( BYTE_PTR CMD_data, BYTE index )
 {
-//--------------------------------------------------
-bool OK = false;
-//--------------------------------------------------
+  bool OK = false;
 
 	if ( END_CMD_CHK ( CMD_data, index ) )
 	{
@@ -3213,21 +2070,19 @@ bool OK = false;
 
 	return (OK);
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//	Comando "tvXX": especifica o "TIMEOUT visitante".
-//=======================================================================
-
+/*
+ *	Executa o comando "tvXX": 
+ *  Especifica o "TIMEOUT visitante".
+ *   @param BYTE_PTR CMD_data Buffer com dados do comando
+ *   @param BYTE index Posicao de leitura do buffer
+ *   @returns bool True caso a execucao seja bem sucedida
+ *                 False caso contrario
+ */
 bool	tvX_CMD ( BYTE_PTR CMD_data, BYTE index )
 {
-//--------------------------------------------------
-BYTE VAL_1;
-bool OK = false;
-//--------------------------------------------------
+  BYTE VAL_1;
+  bool OK = false;
 
 	if ( BCD_8_NEXT_get ( CMD_data, &index, &VAL_1 ) )
 	{
@@ -3248,21 +2103,19 @@ bool OK = false;
 
 	return (OK);
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//	Comando "tcXX": especifica o "TIMEOUT casa".
-//=======================================================================
-
+/*
+ * Executa o comando "tcXX": 
+ * Especifica o "TIMEOUT casa".
+ *  @param BYTE_PTR CMD_data Buffer com dados do comando
+ *  @param BYTE index Posicao de leitura do buffer
+ *  @returns bool True caso a execucao seja bem sucedida
+ *                False caso contrario
+ */
 bool	tcX_CMD ( BYTE_PTR CMD_data, BYTE index )
 {
-//--------------------------------------------------
-BYTE VAL_1;
-bool OK = false;
-//--------------------------------------------------
+  BYTE VAL_1;
+  bool OK = false;
 
 	if ( BCD_8_NEXT_get ( CMD_data, &index, &VAL_1 ) )
 	{
@@ -3283,78 +2136,49 @@ bool OK = false;
 
 	return (OK);
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Define os limites de GAME SCORE
+ */
 #define GAME_SCORE_MIN	0
-
 #define GAME_SCORE_MAX	99
 
-//-----------------------------------------------------------------------
-
+/*
+ * Define os limites do SCORE Delta 
+ */
 #define SCORE_delta_MIN	0
-
 #define SCORE_delta_MAX	10
 
-//***********************************************************************
-
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Verifica se um valor esta dentro dos limites
+ * de SCORE Delta
+ *  @param BYTE value Valor a ser verificado
+ *  @returns bool True caso o valor esteja dentro dos limites
+ *                False caso contrario
+ */
 bool	SCORE_delta_value_CHK ( BYTE value )
 {
-//--------------------------------------------------
-bool OK = false;
-//--------------------------------------------------
-
-	if ( ( value >= SCORE_delta_MIN ) && ( value <= SCORE_delta_MAX ) )
-	{
-		OK = true;
-	}
-
-	return (OK);
+  return ( value >= SCORE_delta_MIN ) && ( value <= SCORE_delta_MAX );
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Verifica se um valor esta dentro dos limites
+ * de GAME SCORE
+ *  @param int value Valor a ser verificado
+ *  @returns bool True caso o valor esteja dentro dos limites
+ *                False caso contrario
+ */
 bool	GAME_SCORE_value_CHK ( int value )
 {
-//--------------------------------------------------
-bool OK = false;
-//--------------------------------------------------
-
-	if ( ( value >= GAME_SCORE_MIN ) && ( value <= GAME_SCORE_MAX ) )
-	{
-		OK = true;
-	}
-
-	return (OK);
+	return ( value >= GAME_SCORE_MIN ) && ( value <= GAME_SCORE_MAX );
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Escreve na serial de comando  o valor decrementado em SCORE GUEST
+ * e o SCORE atualizado
+ *  @param BYTE delta Valor de decremento
+ *  @param BYTE score Valor atual de SCORE GUEST
+ */
 void	SCORE_guest_DECR_inform ( BYTE delta, BYTE score )
 {
 	if ( CMD_reply == CMD_full_reply )	// modo resposta "completa":
@@ -3370,15 +2194,13 @@ void	SCORE_guest_DECR_inform ( BYTE delta, BYTE score )
 		Serial.println ( score, DEC );
 	}
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Escreve na serial de comando  o valor incrementado em SCORE GUEST
+ * e o SCORE atualizado
+ *  @param BYTE delta Valor de incremento
+ *  @param BYTE score Valor atual de SCORE GUEST
+ */
 void	SCORE_guest_INCR_inform ( BYTE delta, BYTE score )
 {
 	if ( CMD_reply == CMD_full_reply )	// modo resposta "completa":
@@ -3394,15 +2216,11 @@ void	SCORE_guest_INCR_inform ( BYTE delta, BYTE score )
 		Serial.println ( score, DEC );
 	}
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Escreve na serial de comando  o valor atual do SCORE GUEST
+ *  @param BYTE score Valor atual de SCORE GUEST
+ */
 void	SCORE_guest_inform ( BYTE score )
 {
 	if ( CMD_reply == CMD_full_reply )	// modo resposta "completa":
@@ -3416,15 +2234,13 @@ void	SCORE_guest_inform ( BYTE score )
 		Serial.println ( score, DEC );
 	}
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Escreve na serial de comando  o valor decrementado em SCORE HOME
+ * e o SCORE atualizado
+ *  @param BYTE delta Valor de decremento
+ *  @param BYTE score Valor atual de SCORE HOME
+ */
 void	SCORE_home_DECR_inform ( BYTE delta, BYTE score )
 {
 	if ( CMD_reply == CMD_full_reply )	// modo resposta "completa":
@@ -3440,15 +2256,13 @@ void	SCORE_home_DECR_inform ( BYTE delta, BYTE score )
 		Serial.println ( score, DEC );
 	}
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Escreve na serial de comando  o valor incrementado em SCORE HOME
+ * e o SCORE atualizado
+ *  @param BYTE delta Valor de incremento
+ *  @param BYTE score Valor atual de SCORE HOME
+ */
 void	SCORE_home_INCR_inform ( BYTE delta, BYTE score )
 {
 	if ( CMD_reply == CMD_full_reply )	// modo resposta "completa":
@@ -3464,15 +2278,11 @@ void	SCORE_home_INCR_inform ( BYTE delta, BYTE score )
 		Serial.println ( score, DEC );
 	}
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Escreve na serial de comando  o valor atual do SCORE HOME
+ *  @param BYTE score Valor atual de SCORE HOME
+ */
 void	SCORE_home_inform ( BYTE score )
 {
 	if ( CMD_reply == CMD_full_reply )	// modo resposta "completa":
@@ -3486,22 +2296,20 @@ void	SCORE_home_inform ( BYTE score )
 		Serial.println ( score, DEC );
 	}
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//	Comando "v-XX": decrementa o "Placar visitante" em "XX" unidades.
-//=======================================================================
-
+/*
+ * Execucao do comando "v-XX": 
+ * Decrementa o "Placar visitante" em "XX" unidades.
+ *  @param BYTE_PTR CMD_data Buffer com dados do comando
+ *  @param BYTE index Posicao de leitura do buffer
+ *  @returns bool True caso a execucao seja bem sucedida
+ *                False caso contrario
+ */
 bool	vXX_DECR_CMD ( BYTE_PTR CMD_data, BYTE index )
 {
-//--------------------------------------------------
-BYTE delta;
-int new_score;
-bool OK = false;
-//--------------------------------------------------
+  BYTE delta;
+  int new_score;
+  bool OK = false;
 
 	if ( BCD_8_NEXT_get ( CMD_data, &index, &delta ) )
 	{
@@ -3527,22 +2335,20 @@ bool OK = false;
 
 	return (OK);
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//	Comando "v+XX": incrementa o "Placar visitante" em "XX" unidades.
-//=======================================================================
-
+/*
+ *	Execucao do comando "v+XX": 
+ *  Incrementa o "Placar visitante" em "XX" unidades.
+ *    @param BYTE_PTR CMD_data Buffer com dados do comando
+ *    @param BYTE index Posicao de leitura do buffer
+ *    @returns bool True caso a execucao seja bem sucedida
+ *                  False caso contrario
+ */
 bool	vXX_INCR_CMD ( BYTE_PTR CMD_data, BYTE index )
 {
-//--------------------------------------------------
-BYTE delta;
-int new_score;
-bool OK = false;
-//--------------------------------------------------
+  BYTE delta;
+  int new_score;
+  bool OK = false;
 
 	if ( BCD_8_NEXT_get ( CMD_data, &index, &delta ) )
 	{
@@ -3568,21 +2374,19 @@ bool OK = false;
 
 	return (OK);
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//	Comando "vXX": especifica o "Placar visitante".
-//=======================================================================
-
+/*
+ * Execucao do comando "vXX": 
+ * Especifica o "Placar visitante".
+ *  @param BYTE_PTR CMD_data Buffer com os dados do comando
+ *  @param BYTE index Posicao de leitura do buffer
+ *  @returns bool True caso a execucao seja bem sucedida
+ *                False caso contrario
+ */
 bool	vXX_CMD ( BYTE_PTR CMD_data, BYTE index )
 {
-//--------------------------------------------------
-BYTE VAL_1;
-bool OK = false;
-//--------------------------------------------------
+  BYTE VAL_1;
+  bool OK = false;
 
 	if ( BCD_8_NEXT_get ( CMD_data, &index, &VAL_1 ) )
 	{
@@ -3603,22 +2407,20 @@ bool OK = false;
 
 	return (OK);
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//	Comando "c-XX": decrementa o "Placar casa" em "XX" unidades.
-//=======================================================================
-
+/*
+ * Execucao do comando "c-XX": 
+ * Decrementa o "Placar casa" em "XX" unidades.
+ *  @param BYTE_PTR CMD_data Buffer com os dados do comando
+ *  @param BYTE index Posicao de leitura do buffer
+ *  @returns bool True caso a execucao seja bem sucedida
+ *                False caso contrario
+ */
 bool	cXX_DECR_CMD ( BYTE_PTR CMD_data, BYTE index )
 {
-//--------------------------------------------------
-BYTE delta;
-int new_score;
-bool OK = false;
-//--------------------------------------------------
+  BYTE delta;
+  int new_score;
+  bool OK = false;
 
 	if ( BCD_8_NEXT_get ( CMD_data, &index, &delta ) )
 	{
@@ -3644,22 +2446,20 @@ bool OK = false;
 
 	return (OK);
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//	Comando "c+XX": incrementa o "Placar casa" em "XX" unidades.
-//=======================================================================
-
+/*
+ * Execucao do comando "c+XX": 
+ * Incrementa o "Placar casa" em "XX" unidades.
+ *  @param BYTE_PTR CMD_data Buffer com os dados do comando
+ *  @param BYTE index Posicao de leitura do buffer
+ *  @returns bool True caso a execucao seja bem sucedida
+ *                False caso contrario
+ */
 bool	cXX_INCR_CMD ( BYTE_PTR CMD_data, BYTE index )
 {
-//--------------------------------------------------
-BYTE delta;
-int new_score;
-bool OK = false;
-//--------------------------------------------------
+  BYTE delta;
+  int new_score;
+  bool OK = false;
 
 	if ( BCD_8_NEXT_get ( CMD_data, &index, &delta ) )
 	{
@@ -3685,21 +2485,19 @@ bool OK = false;
 
 	return (OK);
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//	Comando "cXX": especifica o "Placar casa".
-//=======================================================================
-
+/*
+ * Execucao do comando "cXX": 
+ * Especifica o "Placar casa".
+ *  @param BYTE_PTR CMD_data Buffer com os dados do comando
+ *  @param BYTE index Posicao de leitura do buffer
+ *  @returns bool True caso a execucao seja bem sucedida
+ *                False caso contrario
+ */
 bool	cXX_CMD ( BYTE_PTR CMD_data, BYTE index )
 {
-//--------------------------------------------------
-BYTE VAL_1;
-bool OK = false;
-//--------------------------------------------------
+  BYTE VAL_1;
+  bool OK = false;
 
 	if ( BCD_8_NEXT_get ( CMD_data, &index, &VAL_1 ) )
 	{
@@ -3720,47 +2518,37 @@ bool OK = false;
 
 	return (OK);
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Definicao de limites
+ * para GAME TIME
+ */
 #define Game_Time_MAX_minutos	15
-
 #define Game_Time_MAX_seg	60*Game_Time_MAX_minutos
 
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Verifica se valores de min e seg 
+ * estao dentro dos limites para o GAME TIME
+ *  @param BYTE min Valor dos minutos
+ *  @param BYTE seg Valor dos segundos
+ *  @returns bool True caso os valores obedecam aos limites
+ *                False caso contrario
+ */
 bool	Game_Time_value_CHK ( BYTE min, BYTE seg )
 {
-//--------------------------------------------------
-WORD	seg_TOTAL;
-//--------------------------------------------------
+  WORD	seg_TOTAL;
 
 	seg_TOTAL = ( 60*min + seg );
 
 	return ( seg_TOTAL <= Game_Time_MAX_seg );
 }
-//***********************************************************************
 
 
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Escreve na serial de comando  o valor atual da
+ * cadencia do GAME TIME
+ */
 void	GAME_TIME_cadence_inform ()
 {
 	if ( CMD_reply == CMD_code_reply )	// se modo resposta "codificada":
@@ -3776,15 +2564,13 @@ void	GAME_TIME_cadence_inform ()
 		}
 	}
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Escreve na serial de comando  o valor do GAME TIME  
+ * de acordo com min e seg especificados
+ *  @param BYTE min Valor de minutos
+ *  @param BYTE seg Valor de segundos
+ */
 void	GAME_TIME_inform ( BYTE min, BYTE seg )
 {
 	if ( CMD_reply == CMD_full_reply )	// modo resposta "completa":
@@ -3807,21 +2593,19 @@ void	GAME_TIME_inform ( BYTE min, BYTE seg )
 		Serial.println ( seg, DEC );
 	}
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//	Comando "gXX:YY": especifica o "Game Time" atual.
-//=======================================================================
-
+/*
+ * Execucao do comando "gXX:YY": 
+ * Especifica o "Game Time" atual.
+ *  @param BYTE_PTR CMD_data Buffer com dados do comando
+ *  @param BYTE index Posicao de leitura do buffer
+ *  @returns bool True caso a execucao seja bem sucedida
+ *                False caso contrario
+ */
 bool	gXX_YY_CMD ( BYTE_PTR CMD_data, BYTE index )
 {
-//--------------------------------------------------
-BYTE VAL_1, VAL_2;
-bool OK = false;
-//--------------------------------------------------
+  BYTE VAL_1, VAL_2;  
+  bool OK = false;
 
 	if ( BCD_8_NEXT_get ( CMD_data, &index, &VAL_1 ) )
 	{
@@ -3834,7 +2618,6 @@ bool OK = false;
 			OK = true;
 		}
 	}
-//..................................................
 
 	if ( OK && BCD_8_NEXT_get ( CMD_data, &index, &VAL_2 ) )
 	{
@@ -3848,7 +2631,6 @@ bool OK = false;
 		}
 	}
 	else	OK = false;
-//..................................................
 
 	if ( OK )
 	{
@@ -3857,19 +2639,14 @@ bool OK = false;
 
 		GAME_TIME_inform ( GAME_TIME_min, GAME_TIME_seg );
 	}
-//..................................................
 
 	return (OK);
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Escreve na serial de comando o estado de pausa
+ * do GAME TIME
+ */
 void	GAME_TIME_stop_inform ()
 {
 	if ( CMD_reply == CMD_full_reply )	// modo resposta "completa":
@@ -3881,20 +2658,18 @@ void	GAME_TIME_stop_inform ()
 		ROM_SERIAL_LF_print ("#gp");
 	}
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//	Comando "gp": pára a contagem do "Game Time".
-//=======================================================================
-
+/*
+ * Execucao do comando "gp": 
+ * Pausa a contagem do "Game Time".
+ *  @param BYTE_PTR CMD_data Buffer com dados do comando
+ *  @param BYTE index Posicao de leitura do buffer
+ *  @returns bool True caso a execucao seja bem sucedida
+ *                False caso contrario
+ */
 bool	gp_CMD ( BYTE_PTR CMD_data, BYTE index )
 {
-//--------------------------------------------------
-bool OK = false;
-//--------------------------------------------------
+  bool OK = false;
 
 	if ( END_CMD_CHK ( CMD_data, index ) )
 	{
@@ -3907,15 +2682,11 @@ bool OK = false;
 
 	return (OK);
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Escreve na serial de comando o 
+ * estado de execucao do GAME TIME
+ */
 void	GAME_TIME_run_inform ()
 {
 	if ( CMD_reply == CMD_full_reply )	// modo resposta "completa":
@@ -3927,20 +2698,18 @@ void	GAME_TIME_run_inform ()
 		ROM_SERIAL_LF_print ("#gi");
 	}
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//	Comando "gi": inicia a contagem do "Game Time".
-//=======================================================================
-
+/*
+ * Execucao do comando "gi": 
+ * Inicia a contagem do "Game Time".
+ *  @param BYTE_PTR CMD_data Buffer com dados do comando
+ *  @param BYTE index Posicao de leitura do buffer
+ *  @returns bool True caso a execucao seja bem sucedida
+ *                False caso contrario
+ */
 bool	gi_CMD ( BYTE_PTR CMD_data, BYTE index )
 {
-//--------------------------------------------------
-bool OK = false;
-//--------------------------------------------------
+  bool OK = false;
 
 	if ( END_CMD_CHK ( CMD_data, index ) )
 	{
@@ -3956,78 +2725,50 @@ bool OK = false;
 
 	return (OK);
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Definicao de limites
+ * para o PLAY CLOCK
+ */
 #define PLAY_CLOCK_MIN	0
-
 #define PLAY_CLOCK_MAX	40
 
-//-----------------------------------------------------------------------
-
+/*
+ * Definicao de limites 
+ * para o decremento de
+ * PLAY CLOCK
+ */
 #define PCLOCK_delta_MIN	0
-
 #define PCLOCK_delta_MAX	20
 
-//***********************************************************************
-
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Verifica se um valor obedece aos 
+ * limites do decremento de PLAY CLOCK
+ *  @param BYTE value Valor de decremento
+ *  @returns bool True caso o valor obedeca aos limites
+ *                False caso contrario
+ */
 bool	PCLOCK_delta_value_CHK ( BYTE value )
 {
-//--------------------------------------------------
-bool OK = false;
-//--------------------------------------------------
-
-	if ( ( value >= PCLOCK_delta_MIN ) && ( value <= PCLOCK_delta_MAX ) )
-	{
-		OK = true;
-	}
-
-	return (OK);
+  return ( value >= PCLOCK_delta_MIN ) && ( value <= PCLOCK_delta_MAX );
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Verifica se um valor obedece aos limites 
+ * de PLAY CLOCK
+ *  @param int value Valor do PLAY CLOCK
+ *  @returns bool True caso o valor obedeca aos limites
+ *                False caso contrario
+ */
 bool	PLAY_CLOCK_value_CHK ( int value )
 {
-//--------------------------------------------------
-bool OK = false;
-//--------------------------------------------------
-
-	if ( ( value >= PLAY_CLOCK_MIN ) && ( value <= PLAY_CLOCK_MAX ) )
-	{
-		OK = true;
-	}
-
-	return (OK);
+  return ( value >= PLAY_CLOCK_MIN ) && ( value <= PLAY_CLOCK_MAX );
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Escreve na serial de comando o valor 
+ * de cadencia atual do PLAY CLOCK
+ */
 void	PLAY_CLOCK_cadence_inform ()
 {
 	if ( CMD_reply == CMD_code_reply )	// se modo resposta "codificada":
@@ -4038,15 +2779,11 @@ void	PLAY_CLOCK_cadence_inform ()
 		if ( PLAY_CLOCK == 0 )	ROM_SERIAL_LF_print ("#pp");
 	}
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Escreve na serial de comando o estado
+ * pausado de PLAY CLOCK on BALL 
+ */
 void	PLAY_CLOCK_swap_OFF_inform ()
 {
 	if ( CMD_reply == CMD_full_reply )	// modo resposta "completa":
@@ -4058,15 +2795,11 @@ void	PLAY_CLOCK_swap_OFF_inform ()
 		ROM_SERIAL_LF_print ("#pb0");
 	}
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Escreve na seria de comando o estado
+ * de execucao do PLAY CLOCK on BALL
+ */
 void	PLAY_CLOCK_swap_ON_inform ()
 {
 	if ( CMD_reply == CMD_full_reply )	// modo resposta "completa":
@@ -4078,15 +2811,12 @@ void	PLAY_CLOCK_swap_ON_inform ()
 		ROM_SERIAL_LF_print ("#pb1");
 	}
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Controla a escrita na serial de comando
+ * do estado de PLAY CLOCK on BALL
+ *  @param bool swap Estado (1 swap ON/ 2 swap OFF)
+ */
 void	PLAY_CLOCK_swap_inform ( bool swap )
 {
 	if ( swap )
@@ -4095,15 +2825,13 @@ void	PLAY_CLOCK_swap_inform ( bool swap )
 
 	else	PLAY_CLOCK_swap_OFF_inform ();
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Escreve na serial de comando o valor 
+ * de decremento de PLAY CLOCK
+ *  @param BYTE delta Quantidade decrementada
+ *  @param BYTE value Valor final de PLAY CLOCK
+ */
 void	PLAY_CLOCK_DECR_inform ( BYTE delta, BYTE value )
 {
 	if ( CMD_reply == CMD_full_reply )	// modo resposta "completa":
@@ -4119,15 +2847,13 @@ void	PLAY_CLOCK_DECR_inform ( BYTE delta, BYTE value )
 		Serial.println ( value, DEC );
 	}
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Escreve na serial de comando o valor de 
+ * incremento do PLAY CLOCK
+ *  @param BYTE delta Valor incrementado
+ *  @param BYET value Valor final do PLAY CLOCK
+ */
 void	PLAY_CLOCK_INCR_inform ( BYTE delta, BYTE value )
 {
 	if ( CMD_reply == CMD_full_reply )	// modo resposta "completa":
@@ -4143,15 +2869,12 @@ void	PLAY_CLOCK_INCR_inform ( BYTE delta, BYTE value )
 		Serial.println ( value, DEC );
 	}
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Escreve na serial de comando um 
+ * valor de PLAY CLOCK
+ *  @param BYTE value Valor do PLAY CLOCK
+ */
 void	PLAY_CLOCK_inform ( BYTE value )
 {
 	if ( CMD_reply == CMD_full_reply )	// modo resposta "completa":
@@ -4165,22 +2888,20 @@ void	PLAY_CLOCK_inform ( BYTE value )
 		Serial.println ( value, DEC );
 	}
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//	Comando "p-XX": decrementa o "Play Clock" em "XX" unidades.
-//=======================================================================
-
+/*
+ * Execucao do comando "p-XX": 
+ * Decrementa o "Play Clock" em "XX" unidades.
+ *  @param BYTE_PTR CMD_data Buffer com dados do comando
+ *  @param BYTE index Posicao de leitura do buffer
+ *  @returns bool True caso a execucao seja bem sucedida
+ *                False caso contrario
+ */
 bool	pXX_DECR_CMD ( BYTE_PTR CMD_data, BYTE index )
 {
-//--------------------------------------------------
-BYTE delta;
-int new_PCLOCK;
-bool OK = false;
-//--------------------------------------------------
+  BYTE delta;
+  int new_PCLOCK;
+  bool OK = false;
 
 	if ( BCD_8_NEXT_get ( CMD_data, &index, &delta ) )
 	{
@@ -4206,22 +2927,20 @@ bool OK = false;
 
 	return (OK);
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//	Comando "p+XX": incrementa o "Play Clock" em "XX" unidades.
-//=======================================================================
-
+/*
+ * Execucao do comando "p+XX": 
+ * Incrementa o "Play Clock" em "XX" unidades.
+ *  @param BYTE_PTR CMD_data Buffer com dados do comando 
+ *  @param BYTE index Posicao de leitura do buffer
+ *  @returns bool True caso a execucao seja bem sucedida
+ *                False caso contrario
+ */
 bool	pXX_INCR_CMD ( BYTE_PTR CMD_data, BYTE index )
 {
-//--------------------------------------------------
-BYTE delta;
-int new_PCLOCK;
-bool OK = false;
-//--------------------------------------------------
+  BYTE delta;
+  int new_PCLOCK;
+  bool OK = false;
 
 	if ( BCD_8_NEXT_get ( CMD_data, &index, &delta ) )
 	{
@@ -4247,21 +2966,19 @@ bool OK = false;
 
 	return (OK);
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//	Comando "pXX": especifica o "Play Clock".
-//=======================================================================
-
+/*
+ * Execucao do comando "pXX": 
+ * Especifica o "Play Clock".
+ *  @param BYTE_PTR CMD_data Buffer com dados do comando
+ *  @param BYTE index Posicao de leitura do buffer
+ *  @returns bool True caso a execucao seja bem sucedida
+ *                False caso contrario
+ */
 bool	pXX_CMD ( BYTE_PTR CMD_data, BYTE index )
 {
-//--------------------------------------------------
-BYTE VAL_1;
-bool OK = false;
-//--------------------------------------------------
+  BYTE VAL_1;
+  bool OK = false;
 
 	if ( BCD_8_NEXT_get ( CMD_data, &index, &VAL_1 ) )
 	{
@@ -4282,15 +2999,11 @@ bool OK = false;
 
 	return (OK);
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//	Comando "p": seta o "Play Clock" em "40".
-//=======================================================================
-
+/*
+ * Execucao de comando "p": 
+ * Seta o "Play Clock" em "40".
+ */
 bool	p_CMD ()
 {
 	PLAY_CLOCK = 40;
@@ -4299,20 +3012,18 @@ bool	p_CMD ()
 
 	return (true);
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//	Comando "pb": toggle modo "swap" entre "Play Clock" e "Ball".
-//=======================================================================
-
+/*
+ * Comando "pb": 
+ * Alterna o modo "swap" entre "Play Clock" e "Ball".
+ *  @param BYTE_PTR CMD_data Buffer com dados do comando
+ *  @param BYTE index Posicao de leitura do buffer
+ *  @returns bool True caso a execucao seja bem sucedida
+ *                False caso contrario
+ */
 bool	pb_CMD ( BYTE_PTR CMD_data, BYTE index )
 {
-//--------------------------------------------------
-bool OK = false;
-//--------------------------------------------------
+  bool OK = false;
 
 	if ( END_CMD_CHK ( CMD_data, index ) )
 	{
@@ -4325,15 +3036,11 @@ bool OK = false;
 
 	return (OK);
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Escreve na serial de comando o
+ * estado de pausa do PLAY CLOCK
+ */
 void	PLAY_CLOCK_stop_inform ()
 {
 	if ( CMD_reply == CMD_full_reply )	// modo resposta "completa":
@@ -4345,20 +3052,18 @@ void	PLAY_CLOCK_stop_inform ()
 		ROM_SERIAL_LF_print ("#pp");
 	}
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//	Comando "pp": pára a contagem do "Play Clock".
-//=======================================================================
-
+/*
+ * Comando "pp": 
+ * Pausa/Interrompe a contagem do "Play Clock".
+ *  @param BYTE_PTR CMD_data Buffer com dados do comando
+ *  @param BYTE index Posicao de leitura do buffer
+ *  @returns bool True caso a execucao seja bem sucedida
+ *                False caso contrario
+ */
 bool	pp_CMD ( BYTE_PTR CMD_data, BYTE index )
 {
-//--------------------------------------------------
-bool OK = false;
-//--------------------------------------------------
+  bool OK = false;
 
 	if ( END_CMD_CHK ( CMD_data, index ) )
 	{
@@ -4371,15 +3076,11 @@ bool OK = false;
 
 	return (OK);
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Escreve na serial de comando o estado
+ * de execucao/reinicializado do PLAY CLOCK
+ */
 void	PLAY_CLOCK_run_inform ()
 {
 	if ( CMD_reply == CMD_full_reply )	// modo resposta "completa":
@@ -4391,20 +3092,18 @@ void	PLAY_CLOCK_run_inform ()
 		ROM_SERIAL_LF_print ("#pi");
 	}
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//	Comando "pi": inicia a contagem do "Play Clock".
-//=======================================================================
-
+/*
+ * Execucao do comando "pi": 
+ * Inicia/Reinicializa a contagem do "Play Clock".
+ *  @param BYTE_PTR CMD_data Buffer com dados do comando
+ *  @param BYTE index Posicao de leitura do buffer
+ *  @returns bool True caso a execucao seja bem sucedida
+ *                False caso contrario
+ */
 bool	pi_CMD ( BYTE_PTR CMD_data, BYTE index )
 {
-//--------------------------------------------------
-bool OK = false;
-//--------------------------------------------------
+  bool OK = false;
 
 	if ( END_CMD_CHK ( CMD_data, index ) )
 	{
@@ -4420,50 +3119,31 @@ bool OK = false;
 
 	return (OK);
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Define os limites  
+ * para o BALL POSITION
+ */
 #define BALL_pos_MIN	0
-
 #define BALL_pos_MAX	50
 
-//***********************************************************************
-
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Verificao se um valor obedece os 
+ * limites para o BALL POSITION
+ *  @param BYTE value Valor do BALL POSITION
+ *  @returns bool True caso o valor obedeca aos limites
+ *                False caso contrario
+ */
 bool	BALL_POS_value_CHK ( BYTE value )
 {
-//--------------------------------------------------
-bool OK = false;
-//--------------------------------------------------
-
-	if ( ( value >= BALL_pos_MIN ) && ( value <= BALL_pos_MAX ) )
-	{
-		OK = true;
-	}
-
-	return (OK);
+	return ( value >= BALL_pos_MIN ) && ( value <= BALL_pos_MAX );
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Escreve na serial de comando um valor
+ * de BALL POSITION
+ *  @param BYTE position Valor do BALL POSITION
+ */
 void	BALL_POSITION_inform ( BYTE position )
 {
 	if ( CMD_reply == CMD_full_reply )	// modo resposta "completa":
@@ -4477,21 +3157,19 @@ void	BALL_POSITION_inform ( BYTE position )
 		Serial.println ( position, DEC );
 	}
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//	Comando "bbXX": especifica a posição da bola.
-//=======================================================================
-
+/*
+ * Execucao do comando "bbXX": 
+ * Especifica a posicao da bola.
+ *  @param BYTE_PTR CMD_data Buffer com dados do comando
+ *  @param BYTE index Posicao de leitura do buffer
+ *  @returns bool True caso a execucao seja bem sucedida
+ *                False caso contrario
+ */
 bool	bbXX_CMD ( BYTE_PTR CMD_data, BYTE index )
 {
-//--------------------------------------------------
-BYTE VAL_1;
-bool OK = false;
-//--------------------------------------------------
+  BYTE VAL_1;
+  bool OK = false;
 
 	if ( BCD_8_NEXT_get ( CMD_data, &index, &VAL_1 ) )
 	{
@@ -4512,50 +3190,31 @@ bool OK = false;
 
 	return (OK);
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Definicao do limites  
+ * para o BALL TO GO
+ */
 #define to_GO_MIN	0
-
 #define to_GO_MAX	99
 
-//***********************************************************************
-
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Verifica se um valor obedece aos
+ * limites do BALL TO GO
+ *  @param BYTE value Valor do BALL TO GO
+ *  @returns bool True caso o valor obedeca aos limites
+ *                False caso contrario
+ */
 bool	to_GO_value_CHK ( BYTE value )
 {
-//--------------------------------------------------
-bool OK = false;
-//--------------------------------------------------
-
-	if ( ( value >= to_GO_MIN ) && ( value <= to_GO_MAX ) )
-	{
-		OK = true;
-	}
-
-	return (OK);
+  return ( value >= to_GO_MIN ) && ( value <= to_GO_MAX );
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Escreve na serial de comando um 
+ * valor para o BALL TO GO
+ *  @param BYTE to_GO Valor do BALL TO GO
+ */
 void	to_GO_inform ( BYTE to_GO )
 {
 	if ( CMD_reply == CMD_full_reply )	// modo resposta "completa":
@@ -4569,21 +3228,19 @@ void	to_GO_inform ( BYTE to_GO )
 		Serial.println ( to_GO, DEC );
 	}
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//	Comando "bgXX": especifica o "to GO" atual.
-//=======================================================================
-
+/*
+ * Execucao do comando "bgXX": 
+ * Especifica o "to GO" atual.
+ *  @param BYTE_PTR CMD_data Buffer com dados do comando
+ *  @param BYTE index Posicao de leitura do buffer
+ *  @returns bool True caso a execucao seja bem sucedida
+ *                False caso contrario
+ */
 bool	bgXX_CMD ( BYTE_PTR CMD_data, BYTE index )
 {
-//--------------------------------------------------
-BYTE VAL_1;
-bool OK = false;
-//--------------------------------------------------
+  BYTE VAL_1;
+  bool OK = false;
 
 	if ( BCD_8_NEXT_get ( CMD_data, &index, &VAL_1 ) )
 	{
@@ -4604,33 +3261,24 @@ bool OK = false;
 
 	return (OK);
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Definicao dos limites
+ * para BALL DOWN
+ */
 #define down_MIN	1
-
 #define down_MAX	4
 
-//***********************************************************************
-
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Verifica se um valor obedece aos limites
+ * para BALL DOWN
+ *  @param BYTE value Valor de BALL DOWN
+ *  @returns bool True caso o valor obedeca aos limites
+ *                False caso contrario
+ */
 bool	DOWN_value_CHK ( BYTE value )
 {
-//--------------------------------------------------
-bool OK = false;
-//--------------------------------------------------
+  bool OK = false;
 
 	if ( ( value >= down_MIN ) && ( value <= down_MAX ) )
 	{
@@ -4639,15 +3287,12 @@ bool OK = false;
 
 	return (OK);
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Escreve na serial de comando um valor 
+ * de BALL DOWN
+ *  @param BYTE down Valor do BALL DOWN
+ */
 void	BALL_down_inform ( BYTE down )
 {
 	if ( CMD_reply == CMD_full_reply )	// modo resposta "completa":
@@ -4661,21 +3306,19 @@ void	BALL_down_inform ( BYTE down )
 		Serial.println ( down, DEC );
 	}
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//	Comando "bdX": especifica o "down" atual.
-//=======================================================================
-
+/*
+ * Execucao do Comando "bdX": 
+ * Especifica o "down" atual.
+ *  @param BYTE_PTR CMD_data Buffer com dados do comando
+ *  @param BYTE index Posicao de leitura do buffer
+ *  @returns bool True caso a execucao seja bem sucedida
+ *                False caso contrario
+ */
 bool	bdX_CMD ( BYTE_PTR CMD_data, BYTE index )
 {
-//--------------------------------------------------
-BYTE VAL_1;
-bool OK = false;
-//--------------------------------------------------
+  BYTE VAL_1;
+  bool OK = false;
 
 	if ( BCD_8_NEXT_get ( CMD_data, &index, &VAL_1 ) )
 	{
@@ -4696,22 +3339,19 @@ bool OK = false;
 
 	return (OK);
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//	Comando "bXX,Y,ZZ": especifica a posição da bola, o "down",
-//	e "to GO".
-//=======================================================================
-
+/*
+ * Execucao do comando "bXX,Y,ZZ": especifica a posicao da bola, o "down",
+ * e "to GO".
+ *  @param BYTE_PTR CMD_data Buffer com dados do comando
+ *  @param BYTE index Posicao de leitura do buffer
+ *  @returns bool True caso a execucao seja bem sucedida
+ *                False caso contrario
+ */
 bool	bXX_Y_ZZ_CMD ( BYTE_PTR CMD_data, BYTE index )
 {
-//--------------------------------------------------
-BYTE VAL_1, VAL_2, VAL_3;
-bool OK = false;
-//--------------------------------------------------
+  BYTE VAL_1, VAL_2, VAL_3;
+  bool OK = false;
 
 	if ( BCD_8_NEXT_get ( CMD_data, &index, &VAL_1 ) )
 	{
@@ -4724,7 +3364,6 @@ bool OK = false;
 			OK = BALL_POS_value_CHK ( VAL_1 );
 		}
 	}
-//..................................................
 
 	if ( OK && BCD_8_NEXT_get ( CMD_data, &index, &VAL_2 ) )
 	{
@@ -4740,7 +3379,6 @@ bool OK = false;
 		}
 	}
 	else	OK = false;
-//..................................................
 
 	if ( OK && BCD_8_NEXT_get ( CMD_data, &index, &VAL_3 ) )
 	{
@@ -4754,7 +3392,6 @@ bool OK = false;
 		}
 	}
 	else	OK = false;
-//..................................................
 
 	if ( OK )
 	{
@@ -4767,329 +3404,257 @@ bool OK = false;
 		BALL_to_go = VAL_3;
 		to_GO_inform ( BALL_to_go );
 	}
-//..................................................
 
 	return (OK);
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Controla a execucao de comandos recebidos 
+ * pela interface serial de comandos para controle
+ * de PLAY CLOCK
+ *  @param BYTE_PTR CMD_data Buffer lido da interface serial de comandos
+ *  @param BYTE index Posicao de leitura do buffer
+ *  @returns bool True caso a execucao de um comando interpretado seja bem sucedida
+ *                False caso contrario
+ */
 bool	P_MAIN_CMD ( BYTE_PTR CMD_data, BYTE index )
 {
-//--------------------------------------------------
-bool OK = false;
-//--------------------------------------------------
+  bool OK = false;
 
 	switch ( CMD_data [index] )
 	{
-//..................................................
+  
 		case	'i':
-
+  		index++;
+   		OK = pi_CMD ( CMD_data, index );
+	    break;
+      
+  	case	'p':
 			index++;
-
-			OK = pi_CMD ( CMD_data, index );
-
-		break;
-//..................................................
-
-		case	'p':
-
-			index++;
-
-			OK = pp_CMD ( CMD_data, index );
-
-		break;
-//..................................................
+ 			OK = pp_CMD ( CMD_data, index );
+  		break;
+      
 		case	'+':
-
 			index++;
-
 			OK = pXX_INCR_CMD ( CMD_data, index );
-
-		break;
-//..................................................
-
+  		break;
+      
 		case	'-':
-
 			index++;
-
 			OK = pXX_DECR_CMD ( CMD_data, index );
-
-		break;
-//..................................................
-
+  		break;
 		case	'b':
-
 			index++;
-
 			OK = pb_CMD ( CMD_data, index );
-
-		break;
-//..................................................
-
+  		break;
+      
 		default:
 			if ( END_CMD_CHK ( CMD_data, index ) )
 			{
 				OK = p_CMD ();
 			}
 			else	OK = pXX_CMD ( CMD_data, index );
-//..................................................
+      break;
+      
 	}
 
 	return (OK);
 }
-//***********************************************************************
 
 
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Controla a execucao de comandos recebidos 
+ * pela interface serial de comandos para controle
+ * de GAME TIME
+ *  @param BYTE_PTR CMD_data Buffer lido da interface serial de comandos
+ *  @param BYTE index Posicao de leitura do buffer
+ *  @returns bool True caso a execucao de um comando interpretado seja bem sucedida
+ *                False caso contrario
+ */
 bool	G_MAIN_CMD ( BYTE_PTR CMD_data, BYTE index )
 {
-//--------------------------------------------------
-bool OK = false;
-//--------------------------------------------------
+  bool OK = false;
 
 	switch ( CMD_data [index] )
 	{
-//..................................................
 		case	'i':
-
 			index++;
-
 			OK = gi_CMD ( CMD_data, index );
-
-		break;
-//..................................................
+  		break;
 
 		case	'p':
-
 			index++;
-
 			OK = gp_CMD ( CMD_data, index );
-
-		break;
-//..................................................
+  		break;
 
 		default:
 			OK = gXX_YY_CMD ( CMD_data, index );
-//..................................................
+      break;
 	}
 
 	return (OK);
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Controla a execucao de comandos recebidos 
+ * pela interface serial de comandos para controle
+ * de GAME QUARTER
+ *  @param BYTE_PTR CMD_data Buffer lido da interface serial de comandos
+ *  @param BYTE index Posicao de leitura do buffer
+ *  @returns bool True caso a execucao de um comando interpretado seja bem sucedida
+ *                False caso contrario
+ */
 bool	Q_MAIN_CMD ( BYTE_PTR CMD_data, BYTE index )
 {
-//--------------------------------------------------
-bool OK = false;
-//--------------------------------------------------
+  bool OK = false;
 
 	switch ( CMD_data [index] )
 	{
-//..................................................
 		case	'*':
-
 			index++;
-
 //			OK = yyy_CMD ( CMD_data, index );
-
-		break;
-//..................................................
+  		break;
 
 		case	'/':
-
 			index++;
-
 //			OK = yyy_CMD ( CMD_data, index );
-
-		break;
-//..................................................
+  		break;
 
 		default:
 			OK = qX_CMD ( CMD_data, index );
-//..................................................
+      break;
 	}
 
 	return (OK);
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
+/*
+ * Controla a execucao de comandos recebidos 
+ * pela interface serial de comandos para controle
+ * do PLACAR VISITANTE
+ *  @param BYTE_PTR CMD_data Buffer lido da interface serial de comandos
+ *  @param BYTE index Posicao de leitura do buffer
+ *  @returns bool True caso a execucao de um comando interpretado seja bem sucedida
+ *                False caso contrario
+ */
 
 bool	V_MAIN_CMD ( BYTE_PTR CMD_data, BYTE index )
 {
-//--------------------------------------------------
-bool OK = false;
-//--------------------------------------------------
+  bool OK = false;
 
 	switch ( CMD_data [index] )
 	{
-//..................................................
+
 		case	'+':
-
 			index++;
-
 			OK = vXX_INCR_CMD ( CMD_data, index );
-
-		break;
-//..................................................
+  		break;
 
 		case	'-':
-
 			index++;
-
 			OK = vXX_DECR_CMD ( CMD_data, index );
-
-		break;
-//..................................................
+  		break;
 
 		default:
 			OK = vXX_CMD ( CMD_data, index );
-//..................................................
+      break;
+      
 	}
 
 	return (OK);
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Controla a execucao de comandos recebidos 
+ * pela interface serial de comandos para controle
+ * do PLACAR CASA
+ *  @param BYTE_PTR CMD_data Buffer lido da interface serial de comandos
+ *  @param BYTE index Posicao de leitura do buffer
+ *  @returns bool True caso a execucao de um comando interpretado seja bem sucedida
+ *                False caso contrario
+ */
 bool	C_MAIN_CMD ( BYTE_PTR CMD_data, BYTE index )
 {
-//--------------------------------------------------
-bool OK = false;
-//--------------------------------------------------
+  bool OK = false;
 
 	switch ( CMD_data [index] )
 	{
-//..................................................
+
 		case	'+':
-
 			index++;
-
 			OK = cXX_INCR_CMD ( CMD_data, index );
-
-		break;
-//..................................................
+  		break;
 
 		case	'-':
-
 			index++;
-
 			OK = cXX_DECR_CMD ( CMD_data, index );
-
-		break;
-//..................................................
+  		break;
 
 		default:
 			OK = cXX_CMD ( CMD_data, index );
-//..................................................
+      break;
+      
 	}
 
 	return (OK);
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Controla a execucao de comandos recebidos 
+ * pela interface serial de comandos para controle
+ * de VANTAGEM CASA
+ *  @param BYTE_PTR CMD_data Buffer lido da interface serial de comandos
+ *  @param BYTE index Posicao de leitura do buffer
+ *  @returns bool True caso a execucao de um comando interpretado seja bem sucedida
+ *                False caso contrario
+ */
 bool	L_MAIN_CMD ( BYTE_PTR CMD_data, BYTE index )
 {
-//--------------------------------------------------
-bool OK = false;
-//--------------------------------------------------
+  bool OK = false;
 
 	switch ( CMD_data [index] )
 	{
-//..................................................
+
 		case	'c':
-
 			index++;
-
 			OK = lc_CMD ( CMD_data, index );
-
-		break;
-//..................................................
+  		break;
 
 		case	'v':
-
 			index++;
-
 			OK = lv_CMD ( CMD_data, index );
-
-		break;
-//..................................................
+  		break;
 
 		case	't':
-
 			index++;
-
 			OK = lt_CMD ( CMD_data, index );
-
-		break;
-//..................................................
+  		break;
 
 		default:
-			OK = false;
-//..................................................
+			break;
 	}
 
 	return (OK);
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Controla a execucao de comandos recebidos 
+ * pela interface serial de comandos para controle
+ * de TIMEOUT CASA
+ *  @param BYTE_PTR CMD_data Buffer lido da interface serial de comandos
+ *  @param BYTE index Posicao de leitura do buffer
+ *  @returns bool True caso a execucao de um comando interpretado seja bem sucedida
+ *                False caso contrario
+ */
 bool	T_MAIN_CMD ( BYTE_PTR CMD_data, BYTE index )
 {
-//--------------------------------------------------
-bool OK = false;
-//--------------------------------------------------
+  bool OK = false;
 
 	switch ( CMD_data [index] )
 	{
-//..................................................
+
 		case	'c':
-
 			index++;
-
 			if ( CMD_data [index] == '-')
 			{
 				index++;
@@ -5097,14 +3662,10 @@ bool OK = false;
 				OK = tc_DECR_CMD ( CMD_data, index );
 			}
 			else	OK = tcX_CMD ( CMD_data, index );
-
-		break;
-//..................................................
+  		break;
 
 		case	'v':
-
 			index++;
-
 			if ( CMD_data [index] == '-')
 			{
 				index++;
@@ -5112,218 +3673,163 @@ bool OK = false;
 				OK = tv_DECR_CMD ( CMD_data, index );
 			}
 			else	OK = tvX_CMD ( CMD_data, index );
-
-		break;
-//..................................................
+  		break;
 
 		default:
-			OK = false;
-//..................................................
+			break;
 	}
 
 	return (OK);
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Controla a execucao de comandos recebidos 
+ * pela interface serial de comandos para controle
+ * de POSICAO DA BOLA
+ *  @param BYTE_PTR CMD_data Buffer lido da interface serial de comandos
+ *  @param BYTE index Posicao de leitura do buffer
+ *  @returns bool True caso a execucao de um comando interpretado seja bem sucedida
+ *                False caso contrario
+ */
 bool	B_MAIN_CMD ( BYTE_PTR CMD_data, BYTE index )
 {
-//--------------------------------------------------
-bool OK = false;
-//--------------------------------------------------
+  bool OK = false;
 
 	switch ( CMD_data [index] )
 	{
-//..................................................
+
 		case	'b':
-
 			index++;
-
 			OK = bbXX_CMD ( CMD_data, index );
-
-		break;
-//..................................................
+  		break;
 
 		case	'd':
-
 			index++;
-
 			OK = bdX_CMD ( CMD_data, index );
-
-		break;
-//..................................................
+  		break;
 
 		case	'g':
-
 			index++;
-
 			OK = bgXX_CMD ( CMD_data, index );
-
-		break;
-//..................................................
+  		break;
 
 		default:
 			OK = bXX_Y_ZZ_CMD ( CMD_data, index );
-//..................................................
+      break;
 	}
 
 	return (OK);
 }
-//***********************************************************************
 
-
-
-
-//\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
-//
-//
-//
-//\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
-
-
-
-
-//***********************************************************************
-//	Comando "@0": desliga o Display.
-//=======================================================================
-
+/*
+ * Execucao do comando "@0": 
+ * Desliga o Display.
+ *  @param BYTE_PTR CMD_data Buffer com dados do comando
+ *  @param BYTE index Posicao de leitura do buffer
+ *  @returns bool True caso a execucao seja bem sucedida
+ *                False caso contrario
+ */
 bool	Display_OFF_CMD ( BYTE_PTR CMD_data, BYTE index )
 {
-//--------------------------------------------------
-bool OK = false;
-//--------------------------------------------------
+  bool OK = false;
 
 	if ( END_CMD_CHK ( CMD_data, index ) )
 	{
 		DISPLAY_view_SET ( VIEW_OFF );
-
 		OK = true;
 	}
 
 	return (OK);
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//	Comando "@1": liga o Display.
-//=======================================================================
-
+/*
+ * Execucao do comando "@1": 
+ * Liga o Display.
+ *  @param BYTE_PTR CMD_data Buffer com dados do comando 
+ *  @param BYTE index Posicao de leitura do buffer
+ *  @returns bool True caso a execucao seja bem sucedida
+ *                False caso contrario
+ */
 bool	Display_ON_CMD ( BYTE_PTR CMD_data, BYTE index )
 {
-//--------------------------------------------------
-bool OK = false;
-//--------------------------------------------------
+  bool OK = false;
 
 	if ( END_CMD_CHK ( CMD_data, index ) )
 	{
 		DISPLAY_view_SET ( VIEW_ON );
-
 		OK = true;
 	}
 
 	return (OK);
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Controla a execucao de comandos recebidos 
+ * pela interface serial de comandos para controle
+ * de ESTADO DO DISPLAY
+ *  @param BYTE_PTR CMD_data Buffer lido da interface serial de comandos
+ *  @param BYTE index Posicao de leitura do buffer
+ *  @returns bool True caso a execucao de um comando interpretado seja bem sucedida
+ *                False caso contrario
+ */
 bool	Display_ON_OFF_CMD ( BYTE_PTR CMD_data, BYTE index )
 {
-//--------------------------------------------------
-bool OK = false;
-//--------------------------------------------------
+  bool OK = false;
 
 	switch ( CMD_data [index] )
 	{
-//..................................................
+
 		case	'0':	// comando para desligar o Display.
-
 			index++;
-
 			OK = Display_OFF_CMD ( CMD_data, index );
-
-		break;
-//..................................................
+  		break;
 
 		case	'1':	// comando para ligar o Display.
-
 			index++;
-
 			OK = Display_ON_CMD ( CMD_data, index );
-
-		break;
-//..................................................
+  		break;
 
 		default:
-			OK = false;
-//..................................................
+      break;
 	}
 
 	return (OK);
 }
-//***********************************************************************
 
-
-
-
-//\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
-//
-//
-//
-//\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
-
-
-
-
-//***********************************************************************
-//	Comando "$c": seleciona resposta "codificada" aos comandos
-//	recebidos.
-//=======================================================================
-
+/*
+ * Execucao do comando "$c": 
+ * Seleciona resposta "codificada" aos comandos
+ * recebidos.
+ *  @param BYTE_PTR CMD_data Buffer com dados do comando
+ *  @param BYTE index Posicao de leitura do buffer
+ *  @returns bool True caso a execucao do comando seja bem sucedida
+ *                False caso contrario
+ */
 bool	code_reply_SET_CMD ( BYTE_PTR CMD_data, BYTE index )
 {
-//--------------------------------------------------
-bool OK = false;
-//--------------------------------------------------
+  bool OK = false;
 
 	if ( END_CMD_CHK ( CMD_data, index ) )
 	{
 		CMD_reply = CMD_code_reply;
-
 		OK = true;
 	}
 
 	return (OK);
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//	Comando "$f": seleciona resposta "completa" aos comandos
-//	recebidos.
-//=======================================================================
-
+/*
+ * Execucao do comando "$f": 
+ * Seleciona resposta "completa" aos comandos
+ * recebidos.
+ *  @param BYTE_PTR CMD_data Buffer com dados do comando
+ *  @param BYTE index Posicao de leitura do buffer
+ *  @returns bool True caso a execucao seja bem sucedida
+ *                False caso contrario
+ */
 bool	full_reply_SET_CMD ( BYTE_PTR CMD_data, BYTE index )
 {
-//--------------------------------------------------
-bool OK = false;
-//--------------------------------------------------
+  bool OK = false;
 
 	if ( END_CMD_CHK ( CMD_data, index ) )
 	{
@@ -5334,288 +3840,258 @@ bool OK = false;
 
 	return (OK);
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//	Comando "$n": seleciona sem resposta aos comandos recebidos.
-//=======================================================================
-
+/*
+ * Execucao do comando "$n": 
+ * Seleciona sem resposta aos comandos recebidos.
+ *  @param BYTE_PTR CMD_data Buffer com dados do comando
+ *  @param BYTE index Posicao de leitura do buffer
+ *  @returns bool True caso a execucao seja bem sucedida
+ *                False caso contrario
+ */
 bool	no_reply_SET_CMD ( BYTE_PTR CMD_data, BYTE index )
 {
-//--------------------------------------------------
-bool OK = false;
-//--------------------------------------------------
+  bool OK = false;
 
 	if ( END_CMD_CHK ( CMD_data, index ) )
 	{
 		CMD_reply = CMD_no_reply;
-
 		OK = true;
 	}
 
 	return (OK);
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Controla a execucao de comandos recebidos 
+ * pela interface serial de comandos para controle
+ * do REPLY MODE (Modo de resposta)
+ *  @param BYTE_PTR CMD_data Buffer lido da interface serial de comandos
+ *  @param BYTE index Posicao de leitura do buffer
+ *  @returns bool True caso a execucao de um comando interpretado seja bem sucedida
+ *                False caso contrario
+ */
 bool	REPLY_mode_CMD ( BYTE_PTR CMD_data, BYTE index )
 {
-//--------------------------------------------------
-bool OK = false;
-//--------------------------------------------------
+  bool OK = false;
 
 	switch ( CMD_data [index] )
 	{
-//..................................................
+
 		case	'n':	// especifica "sem resposta" aos comandos recebidos.
-
 			index++;
-
 			OK = no_reply_SET_CMD ( CMD_data, index );
-
-		break;
-//..................................................
+  		break;
 
 		case	'f':	// especifica resposta "completa" aos comandos recebidos.
-
 			index++;
-
 			OK = full_reply_SET_CMD ( CMD_data, index );
-
-		break;
-//..................................................
+  		break;
 
 		case	'c':	// especifica resposta "codificada" aos comandos recebidos.
-
 			index++;
-
 			OK = code_reply_SET_CMD ( CMD_data, index );
-
-		break;
-//..................................................
+  		break;
 
 		default:
-			OK = false;
-//..................................................
+      break;
 	}
 
 	return (OK);
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Armazena na memoria de programa
+ * a tabela de comandos aceitos
+ * pela interface serial de comando
+ */
 ROM_set	CMD_LOC_type CMD_list [] =
 {
-	'b', B_MAIN_CMD,	// comando genérico para setar o "spot de bola".
+  // comando generico para setar o "spot de bola".
+	{
+	  'b', 
+	  B_MAIN_CMD
+	},	
 
-	't', T_MAIN_CMD,	// comando genérico para setar o "timeout".
+  // comando generico para setar o "timeout".
+	{
+	  't',
+    T_MAIN_CMD 
+	},  
+		
+  // comando generico para setar a "vantagem".
+	{
+	  'l',
+    L_MAIN_CMD 
+	},	
 
-	'l', L_MAIN_CMD,	// comando genérico para setar a "vantagem".
+  // comando generico para setar o "Home Score".
+	{
+	  'c',
+    C_MAIN_CMD
+	},	
 
-	'c', C_MAIN_CMD,	// comando genérico para setar o "Home Score".
+  // comando generico para setar o "Guest Score".
+	{
+	  'v',
+    V_MAIN_CMD 
+	},	
 
-	'v', V_MAIN_CMD,	// comando genérico para setar o "Guest Score".
+  // comando generico para setar o "Game Quarter".
+	{
+	  'q',
+    Q_MAIN_CMD 
+	},	
 
-	'q', Q_MAIN_CMD,	// comando genérico para setar o "Game Quarter".
+  // comando generico para setar o "Game Time".
+	{
+	  'g',
+    G_MAIN_CMD 
+	},	
 
-	'g', G_MAIN_CMD,	// comando genérico para setar o "Game Time".
+  // comando generico para setar o "Play Clock".
+	{
+	  'p',
+    P_MAIN_CMD 
+	},	
 
-	'p', P_MAIN_CMD,	// comando genérico para setar o "Play Clock".
+  // comando generico para ON/OFF do Display.
+	{
+	  '@',
+    Display_ON_OFF_CMD 
+	},	
 
-// - - - - - - - - - - - - - - - -
+  // comando generico para setar o modo de resposta.
+	{
+	  '$',
+    REPLY_mode_CMD 
+	},	
 
-	'@', Display_ON_OFF_CMD,	// comando genérico para ON/OFF do Display.
 
-// - - - - - - - - - - - - - - - -
+	CMD_LIST_end_mark, 
 
-	'$', REPLY_mode_CMD,	// comando genérico para setar o modo de resposta.
-
-//..................................................
-
-	CMD_LIST_end_mark, DUMMY_CMD	// marcador do fim da lista.
+  // marcador do fim da lista.
+	DUMMY_CMD	
 };
-//***********************************************************************
 
-
-
-
-//\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
-//
-//
-//
-//\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
-
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Inicialiazacao da placa 
+ * com os modos de operacao
+ * dos pinos e estado inicial
+ * dos mesmos
+ */
 void	SYS_HARDWARE_init ()
 {
-//..................................................
 
-#if	( Main_DISPLAY_ON == 1 )
+  #if	( Main_DISPLAY_ON == 1 )
+  
+  	digitalWrite ( SDOUT_main, LOW );
+  	pinMode ( SDOUT_main, OUTPUT );
+  
+  	digitalWrite ( SCLK_main, LOW );
+  	pinMode ( SCLK_main, OUTPUT );
+  
+  	digitalWrite ( PCLK_main, HIGH );
+  	pinMode ( PCLK_main, OUTPUT );
+  
+  #endif
 
-	digitalWrite ( SDOUT_main, LOW );
-	pinMode ( SDOUT_main, OUTPUT );
-
-	digitalWrite ( SCLK_main, LOW );
-	pinMode ( SCLK_main, OUTPUT );
-
-	digitalWrite ( PCLK_main, HIGH );
-	pinMode ( PCLK_main, OUTPUT );
-
-#endif
-//..................................................
-
-#if	( Pilot_DISPLAY_ON == 1 )
-
-	digitalWrite ( SDOUT_piloto, LOW );
-	pinMode ( SDOUT_piloto, OUTPUT );
-
-	digitalWrite ( SCLK_piloto, LOW );
-	pinMode ( SCLK_piloto, OUTPUT );
-
-	digitalWrite ( PCLK_piloto, LOW );
-	pinMode ( PCLK_piloto, OUTPUT );
-
-#endif
-//..................................................
+  #if	( Pilot_DISPLAY_ON == 1 )
+  
+  	digitalWrite ( SDOUT_piloto, LOW );
+  	pinMode ( SDOUT_piloto, OUTPUT );
+  
+  	digitalWrite ( SCLK_piloto, LOW );
+  	pinMode ( SCLK_piloto, OUTPUT );
+  
+  	digitalWrite ( PCLK_piloto, LOW );
+  	pinMode ( PCLK_piloto, OUTPUT );
+  
+  #endif
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Inicializacao do SISTEMA 
+ */
 void	SYS_init ()
 {
+  //inicializacao de pinos
 	SYS_HARDWARE_init ();
 
-//..................................................
-
+  //inicializacao de cronometros de cadencia
 	SYS_100ms_CRONO_startup ();
 	SYS_100ms_CRONO_run ();
 
-//..................................................
-
+  //estado inicial dos displays
 	DISPLAY_view_SET ( VIEW_OFF );
 
+  //inicializacao de cronometros de cadencia dos displays
 	DISPLAY_refresh_startup ();
 	DISPLAY_refresh_run ();
 
-//..................................................
-
+  //inicializacao da interface serial de comando
 	Serial.begin (9600);
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Controla a cadencia configurada do
+ * SISTEMA
+ */
 void	SYS_cadence ()
 {
+  
 	SYS_100ms_CRONO_cadence ();
 
 	DISPLAY_refresh_cadence ();
 	DISPLAY_refresh_make ();
 }
-//***********************************************************************
 
-
-
-
-//\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
-//
-//
-//
-//\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
-
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Configura o estado de inicializacao 
+ * do PLACAR
+ */
 void	PLACAR_SETTING_init ()
 {
 	GAME_TIME_min = 12;	// seta os minutos do tempo de jogo (00..59).
 	GAME_TIME_seg = 00;	// seta os segundos do tempo de jogo (00..59).
 
-//..................................................
 
-	BALL_position = 0;	// seta a posição atual da Bola (00..99).
+	BALL_position = 0;	// seta a posicao atual da Bola (00..99).
 
 	BALL_down = 1;		// seta o "down" da Bola (0..9).
 
 	BALL_to_go = 00;	// seta o "to go" da Bola (00..99).
 
-//..................................................
 
-	SCORE_home = 00;	// seta a pontuação da "casa" (00..99).
+	SCORE_home = 00;	// seta a pontuacao da "casa" (00..99).
 
 	TMOUT_home = 3;		// seta o "timeout" da "casa" (0..3).
 
-//-----------------------------------------------------------------------
 
-	SCORE_guest = 00;	// seta a pontuação do "visitante" (00..99).
+	SCORE_guest = 00;	// seta a pontuacao do "visitante" (00..99).
 
 	TMOUT_guest = 3;	// seta o "timeout" do "visitante" (0..3).
 
-//-----------------------------------------------------------------------
 
 	GAME_VANTAGE = HOME_VANTAGE;	// seta a vantagem atual no jogo 
-					// ( HOME_VANTAGE ou GUEST_VANTAGE ).
-//-----------------------------------------------------------------------
+					                      // ( HOME_VANTAGE ou GUEST_VANTAGE ).
+
 
 	GAME_quarter = 1;	// seta o "quarter" do jogo (1, 2, 3, ou 4).
 
-//-----------------------------------------------------------------------
 
 	PLAY_CLOCK = 40;	// seta o "Play Clock" atual do jogo (00..99).
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Interceptador de inicializacao
+ * do Arduino
+ */
 void	setup ()
 {
-//--------------------------------------------------
-//--------------------------------------------------
 
-	SYS_init ();		//	<==== setar Pullups ou OUTs p/ pinos não usados.
-				//		(checar padrão de startup do Arduino)
-//..................................................
+	SYS_init ();		//	<==== setar Pullups ou OUTs p/ pinos nao usados.
+				          //		(checar padrao de startup do Arduino)
 
 	PLACAR_SETTING_init ();
 
@@ -5624,50 +4100,40 @@ void	setup ()
 	DISPLAY_refresh_force = true;
 	DISPLAY_refresh_make ();
 
-//..................................................
 
-	PLAY_CLOCK_startup ();		// PLAY_CLOCK_cadence_inform ()
+	PLAY_CLOCK_startup ();		
+	// PLAY_CLOCK_cadence_inform ()
 	PLAY_CLOCK_notify_ON ( PLAY_CLOCK_cadence_inform );
 
 	GAME_TIME_startup ();
 	GAME_TIME_notify_ON ( GAME_TIME_cadence_inform );
 
-//..................................................
 
+  //Escreve na serial de comando
 	ROM_SERIAL_LF_print ("iniciando Placar...");
 	Serial.println ();
 	Serial.println ();
 
+  //Aguarda 10 ms
 	delay (10);
 }
-//***********************************************************************
 
-
-
-
-//***********************************************************************
-//
-//=======================================================================
-
+/*
+ * Loop principal Arduino
+ * de acordo com o clock do sistema
+ */
 void	loop ()
 {
-//--------------------------------------------------
-//--------------------------------------------------
 
 	COMMAND_proc ( (CMD_LOC_type*) CMD_list );
-
-//..................................................
 
 	PLAY_CLOCK_cadence ();
 
 	GAME_TIME_cadence ();
 
-//..................................................
-
 	SYS_cadence ();
 
-//..................................................
-
+  //Aguarda 10 ms
 	delay (10);
+ 
 }
-//***********************************************************************
