@@ -9,6 +9,7 @@
  */
 #ifndef main_h
 #define main_h
+#include "types.h"
 /**
  * Definicao dos modelos (ou tipos) de placas da Plataforma
  * Arduino, suportados por este Sistema:
@@ -31,6 +32,35 @@
  *
  **/
 #define SIMUL 1
+
+/*
+ * Taxa de atualizacao dos displays
+ */
+#if  ( SIMUL == 0 )
+
+  #define DISPLAY_refresh_RATE  ( Second_ms/4 )
+
+#else
+
+  #define DISPLAY_refresh_RATE  ( Second_ms/4 )
+
+#endif
+
+/*
+ * Altera o fator de conversao
+ * de segundos
+ */
+#if  ( SIMUL == 0 )
+  #define Second_ms 1000
+#else
+  #define Second_ms 50
+#endif
+
+/*
+ * taxa de atualizacao de cronometro 
+ */
+#define SYS_100ms_CRONO_RATE  ( Second_ms/10 )
+
 /**
  *  Opcao para disponibilidade dos Placares "Main" e "Piloto":
  *
@@ -41,36 +71,6 @@
                             // presente no Sistema.
 #define Pilot_DISPLAY_ON  1 // indica se o Placar "Piloto" esta
                             // presente no Sistema.
-/**
- * Definicao de tipos para facilitar codificacao do programa:
- **/
-#define  uint  unsigned int  // tipo inteiros positivos de 16 bits.
-#define ulong unsigned long // tipo inteiros positivos de 32 bits.
-
-typedef unsigned char BYTE; // tipo 8 bits, nao sinalizado.
-typedef unsigned short  WORD; // tipo 16 bits, nao sinalizado.
-typedef unsigned long DWORD;  // tipo 32 bits, nao sinalizado.
-
-typedef signed char sBYTE;  // tipo 8 bits, sinalizado.
-typedef signed short  sWORD;  // tipo 16 bits, sinalizado.
-typedef signed long sDWORD; // tipo 32 bits, sinalizado.
-
-typedef BYTE* BYTE_PTR; // tipo Ponteiro para acesso a Bytes.
-
-/**
- * Definicao de padroes de bit para facilitar codificacao do
- * Programa em acessos individuais aos respectivos bits:
- **/
-#define  BIT_0 0x01  // padrao binario correspondente ao "bit 0".
-#define BIT_1 0x02  // padrao binario correspondente ao "bit 1".
-#define BIT_2 0x04  // padrao binario correspondente ao "bit 2".
-#define BIT_3 0x08  // padrao binario correspondente ao "bit 3".
-#define BIT_4 0x10  // padrao binario correspondente ao "bit 4".
-#define BIT_5 0x20  // padrao binario correspondente ao "bit 5".
-#define BIT_6 0x40  // padrao binario correspondente ao "bit 6".
-#define BIT_7 0x80  // padrao binario correspondente ao "bit 7".
-#define BIT_blank 0x00  // padrao para todos os bits em "0".
-
 /**
  * Polarizacao dos displays
  */
@@ -130,27 +130,146 @@ typedef BYTE* BYTE_PTR; // tipo Ponteiro para acesso a Bytes.
 #define Seven_SEG_9_patt_P  ( SEG_aP + SEG_bP + SEG_cP + SEG_dP + SEG_fP + SEG_gP )
 
 
+
+/**
+ *  Definicao da polaridade dos Displays 
+ *   (Anodo ou Katodo Comum), 
+ *   para o Placar "Main"
+ **/
+ #define Main_DISPLAY_pol KATODO_comum
+
+/**
+ * Definicao do tipo do Display 
+ *  (Anodo ou Katodo Comum), 
+ * para o Placar "Piloto"
+ **/
+#define Pilot_DISPLAY_pol ANODO_comum
+
+/**
+ * Codificacao dos padroes dos segmentos de "timeout", para o
+ * Placar "Main":
+ **/
+#define  HOME_TMO_0_patt_M ( BIT_blank )
+#define HOME_TMO_1_patt_M ( BIT_3 )
+#define HOME_TMO_2_patt_M ( BIT_3 + BIT_2 )
+#define HOME_TMO_3_patt_M ( BIT_3 + BIT_2 + BIT_1 )
+#define HOME_TMO_mask_M   ( BIT_3 + BIT_2 + BIT_1 )
+
+#define GUEST_TMO_0_patt_M  ( BIT_blank )
+#define GUEST_TMO_1_patt_M  ( BIT_6 )
+#define GUEST_TMO_2_patt_M  ( BIT_6 + BIT_5 )
+#define GUEST_TMO_3_patt_M  ( BIT_6 + BIT_5 + BIT_4 )
+#define GUEST_TMO_mask_M  ( BIT_6 + BIT_5 + BIT_4 )
+
+/**
+ * Codificacao dos padroes dos segmentos de "timeout", para o
+ * Placar "Piloto":
+ **/
+#define HOME_TMO_0_patt_P ( BIT_blank )
+#define HOME_TMO_1_patt_P ( BIT_3 )
+#define HOME_TMO_2_patt_P ( BIT_3 + BIT_2 )
+#define HOME_TMO_3_patt_P ( BIT_3 + BIT_2 + BIT_1 )
+#define HOME_TMO_mask_P   ( BIT_3 + BIT_2 + BIT_1 )
+
+#define GUEST_TMO_0_patt_P  ( BIT_blank )
+#define GUEST_TMO_1_patt_P  ( BIT_6 )
+#define GUEST_TMO_2_patt_P  ( BIT_6 + BIT_5 )
+#define GUEST_TMO_3_patt_P  ( BIT_6 + BIT_5 + BIT_4 )
+#define GUEST_TMO_mask_P  ( BIT_6 + BIT_5 + BIT_4 )
+
+enum { HOME_VANTAGE, GUEST_VANTAGE };
+
+/**
+ * Codificacao dos padroes dos segmentos de "vantagem", para o
+ * Placar "Main"
+ */
+#define HOME_VANT_patt_M  BIT_7
+#define GUEST_VANT_patt_M BIT_0
+#define VANT_PATT_mask_M  ( HOME_VANT_patt_M + GUEST_VANT_patt_M )
+
+/**
+ *  Codificacao dos padroes dos segmentos de "vantagem", para o
+ *  Placar "Piloto"
+ */
+#define HOME_VANT_patt_P  BIT_7
+#define GUEST_VANT_patt_P BIT_0
+#define VANT_PATT_mask_P  ( HOME_VANT_patt_P + GUEST_VANT_patt_P )
+
+#define VIEW_OFF  0
+#define VIEW_ON   1
+
+/**
+ * Estrutura para tipagem do estado
+ * do indicador
+ */
+typedef union
+{
+  WORD  VIEW_STS; // "view status" geral do Display.
+
+  struct      // flags individuais de "view status":
+  {
+    WORD GAME_TIME  :1; // "view status" do indicador...
+    WORD GAME_quarter:1;  // "view status" do indicador...
+
+    WORD BALL_pos :1; // "view status" do indicador...
+    WORD BALL_down  :1; // "view status" do indicador...
+    WORD BALL_to_go :1; // "view status" do indicador...
+
+    WORD SCORE_home :1; // "view status" do indicador...
+    WORD VANT_home  :1; // "view status" do indicador...
+    WORD TMOUT_home :1; // "view status" do indicador...
+
+    WORD SCORE_guest:1; // "view status" do indicador...
+    WORD VANT_guest :1; // "view status" do indicador...
+    WORD TMOUT_guest:1; // "view status" do indicador...
+
+    WORD PLAY_CLOCK :1; // // "view status" do indicador...
+  };
+
+} DISPLAY_VIEW_type;
+
 /**
  * Definicao de uma estrutura para acesso aos padroes de bits dos
  * segmentos de LEDs do Display, e especificacao dos pinos de HW
  * para controle do Placar fisico:
  **/
-struct  DISPLAY_desc
+DISPLAY_desc DISPLAY_info;
+
+DISPLAY_VIEW_type  DISPLAY_VIEW_STS;
+
+/*
+ * Definicao do caracter de finalizacao de um comando:
+ */
+#if  ( SIMUL == 0 )
+
+  #define CMD_end 0x0A  // caracter de finalizacao de comando = "line feed".
+
+#else
+
+  #define CMD_end '.' // caracter de finalizacao de comando = "ponto".
+
+#endif
+
+#define  CMD_no_reply  0   // sem resposta aos comandos recebidos.
+#define CMD_full_reply  1 // resposta "completa" aos comandos recebidos.
+#define CMD_code_reply  2 // resposta "codificada" aos comandos recebidos.
+
+typedef  bool (*CMD_func_PTR) ( BYTE_PTR CMD_data, BYTE index );
+
+/*
+ * Estrutura para mapeamento entre 
+ * tipo de comando e funcao de comando
+ */
+struct  CMD_LOC_info
 {
-  BYTE_PTR SEGM_code_TAB; // Tabela de codificacao dos segmentos do Display.
+  char CMD_code;
 
-  BYTE_PTR TMO_code_TAB;  // Tabela com codificacao do Timeout "Home/Guest".
+  CMD_func_PTR  CMD_func;
+};
 
-  BYTE_PTR VANT_code_TAB; // Tabela com codificacao do "Vantage".
+typedef struct  CMD_LOC_info  CMD_LOC_type;
 
-  bool  polarity; // polaridade do Display (anodo/katodo comum).
 
-  BYTE SDOUT_pin;   // pino correspondente ao sinal "SDOUT".
-
-  BYTE SCLK_pin;    // pino correspondente ao sinal "SCLK".
-
-  BYTE PCLK_pin;    // pino correspondente ao sinal "PCLK".
-
-} DISPLAY_info;
-
+#define CMD_LIST_end_mark 1 // marcador do fim de uma lista
+                            // de comandos.
 #endif
