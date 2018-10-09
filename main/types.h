@@ -77,4 +77,5 @@ struct  DISPLAY_desc
   BYTE PCLK_pin;    // pino correspondente ao sinal "PCLK".
 
 };
+
 #endif

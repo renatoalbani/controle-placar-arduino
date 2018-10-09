@@ -141,4 +141,187 @@ ROM_set  BYTE VANT_code_TAB_P [] =
   VANT_PATT_mask_P  // 2: mascara para os bits "Vantage".
 };
 
+/*
+ * Controla a execucao de comandos recebidos 
+ * pela interface serial de comandos para controle
+ * de POSICAO DA BOLA
+ *  @param BYTE_PTR CMD_data Buffer lido da interface serial de comandos
+ *  @param BYTE index Posicao de leitura do buffer
+ *  @returns bool True caso a execucao de um comando interpretado seja bem sucedida
+ *                False caso contrario
+ */
+extern bool  B_MAIN_CMD ( BYTE_PTR CMD_data, BYTE index );
+
+/*
+ * Controla a execucao de comandos recebidos 
+ * pela interface serial de comandos para controle
+ * de TIMEOUT CASA
+ *  @param BYTE_PTR CMD_data Buffer lido da interface serial de comandos
+ *  @param BYTE index Posicao de leitura do buffer
+ *  @returns bool True caso a execucao de um comando interpretado seja bem sucedida
+ *                False caso contrario
+ */
+extern bool  T_MAIN_CMD ( BYTE_PTR CMD_data, BYTE index );
+/*
+ * Controla a execucao de comandos recebidos 
+ * pela interface serial de comandos para controle
+ * de VANTAGEM CASA
+ *  @param BYTE_PTR CMD_data Buffer lido da interface serial de comandos
+ *  @param BYTE index Posicao de leitura do buffer
+ *  @returns bool True caso a execucao de um comando interpretado seja bem sucedida
+ *                False caso contrario
+ */
+extern bool  L_MAIN_CMD ( BYTE_PTR CMD_data, BYTE index );
+/*
+ * Controla a execucao de comandos recebidos 
+ * pela interface serial de comandos para controle
+ * do PLACAR CASA
+ *  @param BYTE_PTR CMD_data Buffer lido da interface serial de comandos
+ *  @param BYTE index Posicao de leitura do buffer
+ *  @returns bool True caso a execucao de um comando interpretado seja bem sucedida
+ *                False caso contrario
+ */
+extern bool  C_MAIN_CMD ( BYTE_PTR CMD_data, BYTE index );
+/*
+ * Controla a execucao de comandos recebidos 
+ * pela interface serial de comandos para controle
+ * do PLACAR VISITANTE
+ *  @param BYTE_PTR CMD_data Buffer lido da interface serial de comandos
+ *  @param BYTE index Posicao de leitura do buffer
+ *  @returns bool True caso a execucao de um comando interpretado seja bem sucedida
+ *                False caso contrario
+ */
+
+extern bool  V_MAIN_CMD ( BYTE_PTR CMD_data, BYTE index );
+
+/*
+ * Controla a execucao de comandos recebidos 
+ * pela interface serial de comandos para controle
+ * de GAME QUARTER
+ *  @param BYTE_PTR CMD_data Buffer lido da interface serial de comandos
+ *  @param BYTE index Posicao de leitura do buffer
+ *  @returns bool True caso a execucao de um comando interpretado seja bem sucedida
+ *                False caso contrario
+ */
+extern bool  Q_MAIN_CMD ( BYTE_PTR CMD_data, BYTE index );
+/*
+ * Controla a execucao de comandos recebidos 
+ * pela interface serial de comandos para controle
+ * de GAME TIME
+ *  @param BYTE_PTR CMD_data Buffer lido da interface serial de comandos
+ *  @param BYTE index Posicao de leitura do buffer
+ *  @returns bool True caso a execucao de um comando interpretado seja bem sucedida
+ *                False caso contrario
+ */
+extern bool  G_MAIN_CMD ( BYTE_PTR CMD_data, BYTE index );
+/*
+ * Controla a execucao de comandos recebidos 
+ * pela interface serial de comandos para controle
+ * de PLAY CLOCK
+ *  @param BYTE_PTR CMD_data Buffer lido da interface serial de comandos
+ *  @param BYTE index Posicao de leitura do buffer
+ *  @returns bool True caso a execucao de um comando interpretado seja bem sucedida
+ *                False caso contrario
+ */
+extern bool  P_MAIN_CMD ( BYTE_PTR CMD_data, BYTE index );
+
+/*
+ * Controla a execucao de comandos recebidos 
+ * pela interface serial de comandos para controle
+ * de ESTADO DO DISPLAY
+ *  @param BYTE_PTR CMD_data Buffer lido da interface serial de comandos
+ *  @param BYTE index Posicao de leitura do buffer
+ *  @returns bool True caso a execucao de um comando interpretado seja bem sucedida
+ *                False caso contrario
+ */
+extern bool  Display_ON_OFF_CMD ( BYTE_PTR CMD_data, BYTE index );
+/*
+ * Controla a execucao de comandos recebidos 
+ * pela interface serial de comandos para controle
+ * do REPLY MODE (Modo de resposta)
+ *  @param BYTE_PTR CMD_data Buffer lido da interface serial de comandos
+ *  @param BYTE index Posicao de leitura do buffer
+ *  @returns bool True caso a execucao de um comando interpretado seja bem sucedida
+ *                False caso contrario
+ */
+extern bool  REPLY_mode_CMD ( BYTE_PTR CMD_data, BYTE index );
+/**
+ * Dummy command
+ * Emulacao de comando
+ */
+extern bool  DUMMY_CMD ( BYTE_PTR CMD_data, BYTE index );
+/*
+ * Armazena na memoria de programa
+ * a tabela de comandos aceitos
+ * pela interface serial de comando
+ */
+ROM_set  CMD_LOC_type CMD_list [] =
+{
+  // comando generico para setar o "spot de bola".
+  {
+    'b', 
+    B_MAIN_CMD
+  },  
+
+  // comando generico para setar o "timeout".
+  {
+    't',
+    T_MAIN_CMD 
+  },  
+    
+  // comando generico para setar a "vantagem".
+  {
+    'l',
+    L_MAIN_CMD 
+  },  
+
+  // comando generico para setar o "Home Score".
+  {
+    'c',
+    C_MAIN_CMD
+  },  
+
+  // comando generico para setar o "Guest Score".
+  {
+    'v',
+    V_MAIN_CMD 
+  },  
+
+  // comando generico para setar o "Game Quarter".
+  {
+    'q',
+    Q_MAIN_CMD 
+  },  
+
+  // comando generico para setar o "Game Time".
+  {
+    'g',
+    G_MAIN_CMD 
+  },  
+
+  // comando generico para setar o "Play Clock".
+  {
+    'p',
+    P_MAIN_CMD 
+  },  
+
+  // comando generico para ON/OFF do Display.
+  {
+    '@',
+    Display_ON_OFF_CMD 
+  },  
+
+  // comando generico para setar o modo de resposta.
+  {
+    '$',
+    REPLY_mode_CMD 
+  },  
+
+
+  CMD_LIST_end_mark, 
+
+  // marcador do fim da lista.
+  DUMMY_CMD 
+};
+
 #endif

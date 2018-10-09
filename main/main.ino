@@ -113,191 +113,7 @@ BYTE  CMD_BUFF_idx; // posicao atual no Buffer de Comandos.
 
 CMD_func_PTR SYS_CMD_PTR; // Ponteiro para o Comando a ser executado.
 
-/*
- * Controla a execucao de comandos recebidos 
- * pela interface serial de comandos para controle
- * de POSICAO DA BOLA
- *  @param BYTE_PTR CMD_data Buffer lido da interface serial de comandos
- *  @param BYTE index Posicao de leitura do buffer
- *  @returns bool True caso a execucao de um comando interpretado seja bem sucedida
- *                False caso contrario
- */
-bool  B_MAIN_CMD ( BYTE_PTR CMD_data, BYTE index );
 
-/*
- * Controla a execucao de comandos recebidos 
- * pela interface serial de comandos para controle
- * de TIMEOUT CASA
- *  @param BYTE_PTR CMD_data Buffer lido da interface serial de comandos
- *  @param BYTE index Posicao de leitura do buffer
- *  @returns bool True caso a execucao de um comando interpretado seja bem sucedida
- *                False caso contrario
- */
-bool  T_MAIN_CMD ( BYTE_PTR CMD_data, BYTE index );
-/*
- * Controla a execucao de comandos recebidos 
- * pela interface serial de comandos para controle
- * de VANTAGEM CASA
- *  @param BYTE_PTR CMD_data Buffer lido da interface serial de comandos
- *  @param BYTE index Posicao de leitura do buffer
- *  @returns bool True caso a execucao de um comando interpretado seja bem sucedida
- *                False caso contrario
- */
-bool  L_MAIN_CMD ( BYTE_PTR CMD_data, BYTE index );
-/*
- * Controla a execucao de comandos recebidos 
- * pela interface serial de comandos para controle
- * do PLACAR CASA
- *  @param BYTE_PTR CMD_data Buffer lido da interface serial de comandos
- *  @param BYTE index Posicao de leitura do buffer
- *  @returns bool True caso a execucao de um comando interpretado seja bem sucedida
- *                False caso contrario
- */
-bool  C_MAIN_CMD ( BYTE_PTR CMD_data, BYTE index );
-/*
- * Controla a execucao de comandos recebidos 
- * pela interface serial de comandos para controle
- * do PLACAR VISITANTE
- *  @param BYTE_PTR CMD_data Buffer lido da interface serial de comandos
- *  @param BYTE index Posicao de leitura do buffer
- *  @returns bool True caso a execucao de um comando interpretado seja bem sucedida
- *                False caso contrario
- */
-
-bool  V_MAIN_CMD ( BYTE_PTR CMD_data, BYTE index );
-
-/*
- * Controla a execucao de comandos recebidos 
- * pela interface serial de comandos para controle
- * de GAME QUARTER
- *  @param BYTE_PTR CMD_data Buffer lido da interface serial de comandos
- *  @param BYTE index Posicao de leitura do buffer
- *  @returns bool True caso a execucao de um comando interpretado seja bem sucedida
- *                False caso contrario
- */
-bool  Q_MAIN_CMD ( BYTE_PTR CMD_data, BYTE index );
-/*
- * Controla a execucao de comandos recebidos 
- * pela interface serial de comandos para controle
- * de GAME TIME
- *  @param BYTE_PTR CMD_data Buffer lido da interface serial de comandos
- *  @param BYTE index Posicao de leitura do buffer
- *  @returns bool True caso a execucao de um comando interpretado seja bem sucedida
- *                False caso contrario
- */
-bool  G_MAIN_CMD ( BYTE_PTR CMD_data, BYTE index );
-/*
- * Controla a execucao de comandos recebidos 
- * pela interface serial de comandos para controle
- * de PLAY CLOCK
- *  @param BYTE_PTR CMD_data Buffer lido da interface serial de comandos
- *  @param BYTE index Posicao de leitura do buffer
- *  @returns bool True caso a execucao de um comando interpretado seja bem sucedida
- *                False caso contrario
- */
-bool  P_MAIN_CMD ( BYTE_PTR CMD_data, BYTE index );
-
-/*
- * Controla a execucao de comandos recebidos 
- * pela interface serial de comandos para controle
- * de ESTADO DO DISPLAY
- *  @param BYTE_PTR CMD_data Buffer lido da interface serial de comandos
- *  @param BYTE index Posicao de leitura do buffer
- *  @returns bool True caso a execucao de um comando interpretado seja bem sucedida
- *                False caso contrario
- */
-bool  Display_ON_OFF_CMD ( BYTE_PTR CMD_data, BYTE index );
-/*
- * Controla a execucao de comandos recebidos 
- * pela interface serial de comandos para controle
- * do REPLY MODE (Modo de resposta)
- *  @param BYTE_PTR CMD_data Buffer lido da interface serial de comandos
- *  @param BYTE index Posicao de leitura do buffer
- *  @returns bool True caso a execucao de um comando interpretado seja bem sucedida
- *                False caso contrario
- */
-bool  REPLY_mode_CMD ( BYTE_PTR CMD_data, BYTE index );
-/**
- * Dummy command
- * Emulacao de comando
- */
-bool  DUMMY_CMD ( BYTE_PTR CMD_data, BYTE index )
-{
-  return (true);
-}
-/*
- * Armazena na memoria de programa
- * a tabela de comandos aceitos
- * pela interface serial de comando
- */
-ROM_set  CMD_LOC_type CMD_list [] =
-{
-  // comando generico para setar o "spot de bola".
-  {
-    'b', 
-    B_MAIN_CMD
-  },  
-
-  // comando generico para setar o "timeout".
-  {
-    't',
-    T_MAIN_CMD 
-  },  
-    
-  // comando generico para setar a "vantagem".
-  {
-    'l',
-    L_MAIN_CMD 
-  },  
-
-  // comando generico para setar o "Home Score".
-  {
-    'c',
-    C_MAIN_CMD
-  },  
-
-  // comando generico para setar o "Guest Score".
-  {
-    'v',
-    V_MAIN_CMD 
-  },  
-
-  // comando generico para setar o "Game Quarter".
-  {
-    'q',
-    Q_MAIN_CMD 
-  },  
-
-  // comando generico para setar o "Game Time".
-  {
-    'g',
-    G_MAIN_CMD 
-  },  
-
-  // comando generico para setar o "Play Clock".
-  {
-    'p',
-    P_MAIN_CMD 
-  },  
-
-  // comando generico para ON/OFF do Display.
-  {
-    '@',
-    Display_ON_OFF_CMD 
-  },  
-
-  // comando generico para setar o modo de resposta.
-  {
-    '$',
-    REPLY_mode_CMD 
-  },  
-
-
-  CMD_LIST_end_mark, 
-
-  // marcador do fim da lista.
-  DUMMY_CMD 
-};
                                                                 
 /**
  * Funcao utilitaria para serializacao do estado dos 
@@ -1324,17 +1140,8 @@ bool	BCD_8_NEXT_get ( BYTE_PTR CMD_data, BYTE *index, BYTE *BCD_8 )
  */
 bool	END_CMD_CHK ( BYTE_PTR CMD_data, BYTE index )
 {
-  BYTE VAL_1;
-  bool OK = false;
-
-	VAL_1 = CMD_data [index];
-
-	if ( ( VAL_1 == 0 ) || ( VAL_1 == 0x0D ) )
-	{
-		OK = true;
-	}
-
-	return (OK);
+  BYTE VAL_1 = CMD_data [index];
+  return ( VAL_1 == 0 ) || ( VAL_1 == 0x0D );
 }
 
 
@@ -3381,4 +3188,12 @@ bool  REPLY_mode_CMD ( BYTE_PTR CMD_data, BYTE index )
   }
 
   return (OK);
+}
+/**
+ * Dummy command
+ * Emulacao de comando
+ */
+bool  DUMMY_CMD ( BYTE_PTR CMD_data, BYTE index )
+{
+  return (true);
 }
