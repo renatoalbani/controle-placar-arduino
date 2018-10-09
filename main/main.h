@@ -53,7 +53,7 @@
 #if  ( SIMUL == 0 )
   #define Second_ms 1000
 #else
-  #define Second_ms 50
+  #define Second_ms 1000
 #endif
 
 /*

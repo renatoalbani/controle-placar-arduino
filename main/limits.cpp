@@ -106,14 +106,7 @@ bool  to_GO_value_CHK ( BYTE value )
  */
 bool  DOWN_value_CHK ( BYTE value )
 {
-  bool OK = false;
-
-  if ( ( value >= down_MIN ) && ( value <= down_MAX ) )
-  {
-    OK = true;
-  }
-
-  return (OK);
+ return ( value >= down_MIN ) && ( value <= down_MAX );
 }
 /*
  * Verifica se valores de min e seg 
@@ -125,9 +118,6 @@ bool  DOWN_value_CHK ( BYTE value )
  */
 bool  Game_Time_value_CHK ( BYTE min, BYTE seg )
 {
-  WORD  seg_TOTAL;
-
-  seg_TOTAL = ( 60*min + seg );
-
+  WORD  seg_TOTAL = ( 60*min + seg );
   return ( seg_TOTAL <= Game_Time_MAX_seg );
 }

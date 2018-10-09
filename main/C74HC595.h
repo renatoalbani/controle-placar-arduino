@@ -17,7 +17,7 @@ class C74HC595 {
      *  @param int SOUT_PIN Pino de dados da serial
      *  @param int LCLK_PIN Pino de clock do latch
      */
-    C74HC595(int SCLK_PIN, int SOUT_PIN, int LCLK_PIN);
+    C74HC595(BYTE SCLK_PIN, BYTE SOUT_PIN, BYTE LCLK_PIN);
     /*
      * Funcao para serializacao de um BYTE 
      * para os registradores 74HC595
@@ -31,8 +31,8 @@ class C74HC595 {
      */
     void latch();
   private:
-    int _SCLK_PIN; //pino de clock da serial
-    int _SOUT_PIN; //pino de dados da serial
-    int _LCLK_PIN; //pino de clock do latch
+    BYTE _SCLK_PIN; //pino de clock da serial
+    BYTE _SOUT_PIN; //pino de dados da serial
+    BYTE _LCLK_PIN; //pino de clock do latch
 };
 #endif

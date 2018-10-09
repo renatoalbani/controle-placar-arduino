@@ -7,19 +7,19 @@
 #include <Arduino.h>
 #include "types.h"
 #include "C74HC595.h"
-C74HC595::C74HC595(int SCLK_PIN, int SOUT_PIN, int LCLK_PIN){
+C74HC595::C74HC595(BYTE SCLK_PIN, BYTE SOUT_PIN, BYTE LCLK_PIN){
   _SCLK_PIN = SCLK_PIN;
   _SOUT_PIN = SOUT_PIN;
   _LCLK_PIN = LCLK_PIN;  
   
-  pinMode ( _SOUT_PIN, OUTPUT );
   digitalWrite ( _SOUT_PIN, LOW );
-
-  pinMode ( _SCLK_PIN, OUTPUT );
-  digitalWrite ( _SCLK_PIN, LOW );
+  pinMode ( _SOUT_PIN, OUTPUT );
   
-  pinMode ( _LCLK_PIN, OUTPUT );
+  digitalWrite ( _SCLK_PIN, LOW );
+  pinMode ( _SCLK_PIN, OUTPUT );
+    
   digitalWrite ( _LCLK_PIN, HIGH );
+  pinMode ( _LCLK_PIN, OUTPUT );
   
 }
 /*
@@ -28,6 +28,7 @@ C74HC595::C74HC595(int SCLK_PIN, int SOUT_PIN, int LCLK_PIN){
  *  @param BYTE DATA_8 Dado a ser serializado
  */
 void C74HC595::writeData(BYTE DATA_8){
+    
   BYTE  bit_n;    // bit atual sendo enviado ao ShiftRegister.
   BYTE  bit_MASK; // mascara binaria para o bit atual.
 
