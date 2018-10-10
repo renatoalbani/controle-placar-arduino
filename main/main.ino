@@ -11,17 +11,29 @@
 /**
  *	Bibliotecas utilizadas neste Sistema:
  **/
+
 #include "types.h" // definicoes de tipos utilizados pelo sistema
 #include "util.h" // funcoes utilitarias e definicoes de tipos
 #include "main.h" // biblioteca com definicoes do sistema
 #include "pins.h" //definicoes dos pinos da placa utilizados
 #include "limits.h" //definicoes dos limites de sistema
+#include "pgmrom.h" //funcoes para acesso a memória de programa
+#include "crono.h" //funcoes para controle de cronometros
+
 #include <stdio.h>	// "stdio" nativo do C++, para Arduino (CPU AVR).
 #include <stdlib.h>	// "stdlib" nativo do C++, para Arduino (CPU AVR).
 #include <avr/pgmspace.h>	// para acesso à FLASH da CPU.
-#include "pgmrom.h" //funcoes para acesso a memória de programa
+
 #include "C74HC595.h" //funcoes para controle dos 74HC595
-#include "crono.h" //funcoes para controle de cronometros
+#include "txplacar.h" //funcoes de leitura e envio de comandos pelo modulo nRF24L01
+
+/**
+ * Definicao de uma estrutura para acesso aos padroes de bits dos
+ * segmentos de LEDs do Display, e especificacao dos pinos de HW
+ * para controle do Placar fisico:
+ **/
+DISPLAY_desc DISPLAY_info;
+DISPLAY_VIEW_type  DISPLAY_VIEW_STS;
 
 /**
  * Inicializacao de instancia para controle dos 74HC595
@@ -106,7 +118,8 @@ BYTE  CMD_reply = CMD_full_reply; // indica o tipo de resposta aos
 /*
  * Definicoes do buffer de comandos
  */
-#define  CMD_size 10 // maximo de caracteres em um comando.
+ // maximo de caracteres em um comando.
+#define CMD_size 10
 BYTE  CMD_BUFF [CMD_size];  // Buffer de Comandos recebidos.
 BYTE  CMD_BUFF_idx; // posicao atual no Buffer de Comandos.
 
@@ -2746,9 +2759,6 @@ void	SYS_init ()
   //inicializacao de cronometros de cadencia dos displays
 	DISPLAY_refresh_startup ();
 	DISPLAY_refresh_run ();
-
-  //inicializacao da interface serial de comando
-	Serial.begin (9600);
 }
 
 /*
@@ -2808,26 +2818,23 @@ void	PLACAR_SETTING_init ()
 void	setup ()
 {
 
-	SYS_init ();		//	<==== setar Pullups ou OUTs p/ pinos nao usados.
-				          //		(checar padrao de startup do Arduino)
+//TODO: SERA REMOVIDO DO MAIN SKETCH
+//	SYS_init ();		//	<==== setar Pullups ou OUTs p/ pinos nao usados.
+//				          //		(checar padrao de startup do Arduino)
+//
+//	PLACAR_SETTING_init ();
+//
+//	DISPLAY_refresh_force = true;
+//	DISPLAY_refresh_make ();
+//
+//
+//	PLAY_CLOCK_startup ();		
+//	PLAY_CLOCK_notify_ON ( PLAY_CLOCK_cadence_inform );
+//
+//	GAME_TIME_startup ();
+//	GAME_TIME_notify_ON ( GAME_TIME_cadence_inform );
 
-	PLACAR_SETTING_init ();
-
-	DISPLAY_refresh_force = true;
-	DISPLAY_refresh_make ();
-
-
-	PLAY_CLOCK_startup ();		
-	PLAY_CLOCK_notify_ON ( PLAY_CLOCK_cadence_inform );
-
-	GAME_TIME_startup ();
-	GAME_TIME_notify_ON ( GAME_TIME_cadence_inform );
-
-
-  //Escreve na serial de comando
-	ROM_SERIAL_LF_print ("iniciando Placar...");
-	Serial.println ();
-	Serial.println ();
+  txSetup();
 
   //Aguarda 10 ms
 	delay (10);
@@ -2840,14 +2847,18 @@ void	setup ()
 void	loop ()
 {
 
-	COMMAND_proc ( (CMD_LOC_type*) CMD_list );
+//SERA REMOVIDO DO MAIN SKETCH
+//	COMMAND_proc ( (CMD_LOC_type*) CMD_list );
 
-	PLAY_CLOCK_cadence ();
+//	PLAY_CLOCK_cadence ();
 
-	GAME_TIME_cadence ();
+//	GAME_TIME_cadence ();
 
-	SYS_cadence ();
+//	SYS_cadence ();
 
+  txLoop();
+
+  //TODO: Verificar necessidade
   //Aguarda 10 ms
 	delay (10);
  

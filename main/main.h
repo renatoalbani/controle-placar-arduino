@@ -24,6 +24,26 @@
  **/
 #define HW_Board  MEGA_2560 // seleciona a placa utilizada.
 
+/*
+ * Pinos para controle do 
+ * modulo nRF24L01
+ * para a board UNO
+ */
+#if (HW_Board == MEGA_2560)
+  #define RF24_CE_PIN 9
+  #define RF24_CSN_PIN 10 
+#endif
+
+/*
+ * Pinos de controle do
+ * modulo nRF24L01
+ * para a board MEGA
+ */
+#if (HW_Board == UNO_rev3)
+  #define RF24_CE_PIN 9
+  #define RF24_CSN_PIN 10
+#endif
+
 /**
  * Opcao para execucao "real" ou "simulada":
  *
@@ -228,15 +248,6 @@ typedef union
 
 } DISPLAY_VIEW_type;
 
-/**
- * Definicao de uma estrutura para acesso aos padroes de bits dos
- * segmentos de LEDs do Display, e especificacao dos pinos de HW
- * para controle do Placar fisico:
- **/
-DISPLAY_desc DISPLAY_info;
-
-DISPLAY_VIEW_type  DISPLAY_VIEW_STS;
-
 /*
  * Definicao do caracter de finalizacao de um comando:
  */
@@ -245,9 +256,9 @@ DISPLAY_VIEW_type  DISPLAY_VIEW_STS;
   #define CMD_end 0x0A  // caracter de finalizacao de comando = "line feed".
 
 #else
-
-  #define CMD_end '.' // caracter de finalizacao de comando = "ponto".
-
+  
+  //#define CMD_end '.' // caracter de finalizacao de comando = "ponto".
+  #define CMD_end 0x0D
 #endif
 
 #define  CMD_no_reply  0   // sem resposta aos comandos recebidos.
