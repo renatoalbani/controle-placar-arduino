@@ -40,4 +40,13 @@ extern BYTE  LOW_CASE_conv ( BYTE ASCII_char );
  *                False caso contrario
  */
 extern bool  ASCII_to_BCD_8 ( BYTE *code );
+/*
+ * Le o proximo byte BCD nos dados de um comando
+ *  @param BYTE_PTR CMD_data referencia para os dados do comando
+ *  @param BYTE *index referencia para indice de inicio da verificacao 
+ *  @param BYTE *BCD_8 referencia (buffer) para armazenar o byte encontrado 
+ *  @returns bool True caso exista um byte BCD nos dados
+ *                False caso contrario
+ */
+extern bool  BCD_8_NEXT_get ( BYTE_PTR CMD_data, BYTE *index, BYTE *BCD_8 );
 #endif

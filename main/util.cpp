@@ -100,3 +100,39 @@ bool  ASCII_to_BCD_8 ( BYTE *code )
 
   return (is_BCD);
 }
+
+/*
+ * Le o proximo byte BCD nos dados de um comando
+ *  @param BYTE_PTR CMD_data referencia para os dados do comando
+ *  @param BYTE *index referencia para indice de inicio da verificacao 
+ *  @param BYTE *BCD_8 referencia (buffer) para armazenar o byte encontrado 
+ *  @returns bool True caso exista um byte BCD nos dados
+ *                False caso contrario
+ */
+bool  BCD_8_NEXT_get ( BYTE_PTR CMD_data, BYTE *index, BYTE *BCD_8 )
+{
+  BYTE VAL_1, VAL_2;
+  bool is_BCD = false;
+
+  VAL_1 = CMD_data [*index];
+
+  if ( ASCII_to_BCD_8 (&VAL_1) )
+  {
+    is_BCD = true;
+
+    (*index)++;
+
+    VAL_2 = CMD_data [*index];
+
+    if ( ASCII_to_BCD_8 (&VAL_2) )
+    {
+      (*index)++;
+
+      VAL_1 = ( VAL_1 << 4 ) + VAL_2;
+    }
+
+    *BCD_8 = VAL_1;
+  }
+
+  return (is_BCD);
+}

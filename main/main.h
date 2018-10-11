@@ -10,6 +10,15 @@
 #ifndef main_h
 #define main_h
 #include "types.h"
+
+/*
+ * Definicoes do modo de operacao
+ * do radio
+ */
+#define RX_RADIO 0
+#define TX_RADIO 1
+#define RADIO_MODE RX_RADIO
+
 /**
  * Definicao dos modelos (ou tipos) de placas da Plataforma
  * Arduino, suportados por este Sistema:
@@ -22,7 +31,7 @@
  * UNO = opcao para utilizacao da placa Arduino UNO.
  * MEGA_2560 = opcao para utilizacao da placa Arduino Mega 2560.
  **/
-#define HW_Board  MEGA_2560 // seleciona a placa utilizada.
+#define HW_Board  UNO_rev3 // seleciona a placa utilizada.
 
 /*
  * Pinos para controle do 
@@ -73,7 +82,7 @@
 #if  ( SIMUL == 0 )
   #define Second_ms 1000
 #else
-  #define Second_ms 1000
+  #define Second_ms 200
 #endif
 
 /*
@@ -82,14 +91,12 @@
 #define SYS_100ms_CRONO_RATE  ( Second_ms/10 )
 
 /**
- *  Opcao para disponibilidade dos Placares "Main" e "Piloto":
+ *  Opcao para disponibilidade dos Placar
  *
  *  0 = Placar ausente.
  *  1 = Placar presente.
  **/
 #define Main_DISPLAY_ON   1 // indica se o Placar "Main" esta
-                            // presente no Sistema.
-#define Pilot_DISPLAY_ON  1 // indica se o Placar "Piloto" esta
                             // presente no Sistema.
 /**
  * Polarizacao dos displays
@@ -98,78 +105,76 @@
 #define KATODO_comum  1 // indica Display tipo "katodo comum".
 
 /**
- *  Mapeamento dos segmentos do Display no Placar "Main":
- **/
-#define SEG_aM  BIT_7  // bit correspondente ao Segmento "a".
-#define SEG_bM  BIT_1  // bit correspondente ao Segmento "b".
-#define SEG_cM  BIT_2  // bit correspondente ao Segmento "c".
-#define SEG_dM  BIT_3  // bit correspondente ao Segmento "d".
-#define SEG_eM  BIT_4  // bit correspondente ao Segmento "e".
-#define SEG_fM  BIT_5  // bit correspondente ao Segmento "f".
-#define SEG_gM  BIT_6  // bit correspondente ao Segmento "g".
-
-/**
- * Mapeamento dos segmentos do Display no Placar "Piloto":
- **/
-#define SEG_aP  BIT_2  // bit correspondente ao Segmento "a".
-#define SEG_bP  BIT_1  // bit correspondente ao Segmento "b".
-#define SEG_cP  BIT_5  // bit correspondente ao Segmento "c".
-#define SEG_dP  BIT_6  // bit correspondente ao Segmento "d".
-#define SEG_eP  BIT_7  // bit correspondente ao Segmento "e".
-#define SEG_fP  BIT_3  // bit correspondente ao Segmento "f".
-#define SEG_gP  BIT_4  // bit correspondente ao Segmento "g".
-
-/**
- *  Codificacao dos padroes numericos BCD em 7 segmentos, para o
- *  Placar "Main".
- **/
-#define Seven_SEG_0_patt_M  ( SEG_aM + SEG_bM + SEG_cM + SEG_dM + SEG_eM + SEG_fM )
-#define Seven_SEG_1_patt_M  ( SEG_bM + SEG_cM )
-#define Seven_SEG_2_patt_M  ( SEG_aM + SEG_bM + SEG_dM + SEG_eM + SEG_gM )
-#define Seven_SEG_3_patt_M  ( SEG_aM + SEG_bM + SEG_cM + SEG_dM + SEG_gM )
-#define Seven_SEG_4_patt_M  ( SEG_bM + SEG_cM + SEG_fM + SEG_gM )
-#define Seven_SEG_5_patt_M  ( SEG_aM + SEG_cM + SEG_dM + SEG_fM + SEG_gM )
-#define Seven_SEG_6_patt_M  ( SEG_aM + SEG_cM + SEG_dM + SEG_eM + SEG_fM + SEG_gM )
-#define Seven_SEG_7_patt_M  ( SEG_aM + SEG_bM + SEG_cM )
-#define Seven_SEG_8_patt_M  ( SEG_aM + SEG_bM + SEG_cM + SEG_dM + SEG_eM + SEG_fM + SEG_gM )
-#define Seven_SEG_9_patt_M  ( SEG_aM + SEG_bM + SEG_cM + SEG_dM + SEG_fM + SEG_gM )
-
-/**
- *  Codificacao dos padroes numericos BCD em 7 segmentos, para o
- *  Placar "Piloto".
- **/
-#define Seven_SEG_0_patt_P  ( SEG_aP + SEG_bP + SEG_cP + SEG_dP + SEG_eP + SEG_fP )
-#define Seven_SEG_1_patt_P  ( SEG_bP + SEG_cP )
-#define Seven_SEG_2_patt_P  ( SEG_aP + SEG_bP + SEG_dP + SEG_eP + SEG_gP )
-#define Seven_SEG_3_patt_P  ( SEG_aP + SEG_bP + SEG_cP + SEG_dP + SEG_gP )
-#define Seven_SEG_4_patt_P  ( SEG_bP + SEG_cP + SEG_fP + SEG_gP )
-#define Seven_SEG_5_patt_P  ( SEG_aP + SEG_cP + SEG_dP + SEG_fP + SEG_gP )
-#define Seven_SEG_6_patt_P  ( SEG_aP + SEG_cP + SEG_dP + SEG_eP + SEG_fP + SEG_gP )
-#define Seven_SEG_7_patt_P  ( SEG_aP + SEG_bP + SEG_cP )
-#define Seven_SEG_8_patt_P  ( SEG_aP + SEG_bP + SEG_cP + SEG_dP + SEG_eP + SEG_fP + SEG_gP )
-#define Seven_SEG_9_patt_P  ( SEG_aP + SEG_bP + SEG_cP + SEG_dP + SEG_fP + SEG_gP )
-
-
-
-/**
  *  Definicao da polaridade dos Displays 
  *   (Anodo ou Katodo Comum), 
  *   para o Placar "Main"
  **/
  #define Main_DISPLAY_pol KATODO_comum
-
+ 
 /**
- * Definicao do tipo do Display 
- *  (Anodo ou Katodo Comum), 
- * para o Placar "Piloto"
+ *  Mapeamento dos segmentos do Display no Placar
+ *  (REAL)
  **/
-#define Pilot_DISPLAY_pol ANODO_comum
+#if (SIMUL == 0)
+  #define SEG_aM  BIT_7  // bit correspondente ao Segmento "a".
+  #define SEG_bM  BIT_1  // bit correspondente ao Segmento "b".
+  #define SEG_cM  BIT_2  // bit correspondente ao Segmento "c".
+  #define SEG_dM  BIT_3  // bit correspondente ao Segmento "d".
+  #define SEG_eM  BIT_4  // bit correspondente ao Segmento "e".
+  #define SEG_fM  BIT_5  // bit correspondente ao Segmento "f".
+  #define SEG_gM  BIT_6  // bit correspondente ao Segmento "g".
+#endif
+/**
+ * Mapeamento dos segmentos do Display no Placar 
+ * (SIMULADO)
+ **/
+#if (SIMUL == 1)
+  #define SEG_aM  BIT_2  // bit correspondente ao Segmento "a".
+  #define SEG_bM  BIT_1  // bit correspondente ao Segmento "b".
+  #define SEG_cM  BIT_5  // bit correspondente ao Segmento "c".
+  #define SEG_dM  BIT_6  // bit correspondente ao Segmento "d".
+  #define SEG_eM  BIT_7  // bit correspondente ao Segmento "e".
+  #define SEG_fM  BIT_3  // bit correspondente ao Segmento "f".
+  #define SEG_gM  BIT_4  // bit correspondente ao Segmento "g".
+#endif
+/**
+ *  Codificacao dos padroes numericos BCD em 7 segmentos, para o
+ *  Placar "Main" (REAL).
+ **/
+#if (SIMUL == 0)
+  #define Seven_SEG_0_patt_M  ( SEG_aM + SEG_bM + SEG_cM + SEG_dM + SEG_eM + SEG_fM )
+  #define Seven_SEG_1_patt_M  ( SEG_bM + SEG_cM )
+  #define Seven_SEG_2_patt_M  ( SEG_aM + SEG_bM + SEG_dM + SEG_eM + SEG_gM )
+  #define Seven_SEG_3_patt_M  ( SEG_aM + SEG_bM + SEG_cM + SEG_dM + SEG_gM )
+  #define Seven_SEG_4_patt_M  ( SEG_bM + SEG_cM + SEG_fM + SEG_gM )
+  #define Seven_SEG_5_patt_M  ( SEG_aM + SEG_cM + SEG_dM + SEG_fM + SEG_gM )
+  #define Seven_SEG_6_patt_M  ( SEG_aM + SEG_cM + SEG_dM + SEG_eM + SEG_fM + SEG_gM )
+  #define Seven_SEG_7_patt_M  ( SEG_aM + SEG_bM + SEG_cM )
+  #define Seven_SEG_8_patt_M  ( SEG_aM + SEG_bM + SEG_cM + SEG_dM + SEG_eM + SEG_fM + SEG_gM )
+  #define Seven_SEG_9_patt_M  ( SEG_aM + SEG_bM + SEG_cM + SEG_dM + SEG_fM + SEG_gM )
+#endif
+/**
+ *  Codificacao dos padroes numericos BCD em 7 segmentos, para o
+ *  Placar (SIMULADO).
+ **/
+#if (SIMUL == 1)
+  #define Seven_SEG_0_patt_M  ( SEG_aM + SEG_bM + SEG_cM + SEG_dM + SEG_eM + SEG_fM )
+  #define Seven_SEG_1_patt_M  ( SEG_bM + SEG_cM )
+  #define Seven_SEG_2_patt_M  ( SEG_aM + SEG_bM + SEG_dM + SEG_eM + SEG_gM )
+  #define Seven_SEG_3_patt_M  ( SEG_aM + SEG_bM + SEG_cM + SEG_dM + SEG_gM )
+  #define Seven_SEG_4_patt_M  ( SEG_bM + SEG_cM + SEG_fM + SEG_gM )
+  #define Seven_SEG_5_patt_M  ( SEG_aM + SEG_cM + SEG_dM + SEG_fM + SEG_gM )
+  #define Seven_SEG_6_patt_M  ( SEG_aM + SEG_cM + SEG_dM + SEG_eM + SEG_fM + SEG_gM )
+  #define Seven_SEG_7_patt_M  ( SEG_aM + SEG_bM + SEG_cM )
+  #define Seven_SEG_8_patt_M  ( SEG_aM + SEG_bM + SEG_cM + SEG_dM + SEG_eM + SEG_fM + SEG_gM )
+  #define Seven_SEG_9_patt_M  ( SEG_aM + SEG_bM + SEG_cM + SEG_dM + SEG_fM + SEG_gM )
+#endif
 
 /**
  * Codificacao dos padroes dos segmentos de "timeout", para o
  * Placar "Main":
  **/
-#define  HOME_TMO_0_patt_M ( BIT_blank )
+#define HOME_TMO_0_patt_M ( BIT_blank )
 #define HOME_TMO_1_patt_M ( BIT_3 )
 #define HOME_TMO_2_patt_M ( BIT_3 + BIT_2 )
 #define HOME_TMO_3_patt_M ( BIT_3 + BIT_2 + BIT_1 )
@@ -180,22 +185,6 @@
 #define GUEST_TMO_2_patt_M  ( BIT_6 + BIT_5 )
 #define GUEST_TMO_3_patt_M  ( BIT_6 + BIT_5 + BIT_4 )
 #define GUEST_TMO_mask_M  ( BIT_6 + BIT_5 + BIT_4 )
-
-/**
- * Codificacao dos padroes dos segmentos de "timeout", para o
- * Placar "Piloto":
- **/
-#define HOME_TMO_0_patt_P ( BIT_blank )
-#define HOME_TMO_1_patt_P ( BIT_3 )
-#define HOME_TMO_2_patt_P ( BIT_3 + BIT_2 )
-#define HOME_TMO_3_patt_P ( BIT_3 + BIT_2 + BIT_1 )
-#define HOME_TMO_mask_P   ( BIT_3 + BIT_2 + BIT_1 )
-
-#define GUEST_TMO_0_patt_P  ( BIT_blank )
-#define GUEST_TMO_1_patt_P  ( BIT_6 )
-#define GUEST_TMO_2_patt_P  ( BIT_6 + BIT_5 )
-#define GUEST_TMO_3_patt_P  ( BIT_6 + BIT_5 + BIT_4 )
-#define GUEST_TMO_mask_P  ( BIT_6 + BIT_5 + BIT_4 )
 
 enum { HOME_VANTAGE, GUEST_VANTAGE };
 
