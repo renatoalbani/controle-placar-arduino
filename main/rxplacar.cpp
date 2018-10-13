@@ -488,9 +488,13 @@ void  TIMEOUT_VANTAGE_send ( BYTE HOME_tmo, BYTE GUEST_tmo, BYTE vantage )
  */
 void  PLACAR_DISPLAY_normal_serialize ()
 {
-  PLAY_CLOCK_send ( PLAY_CLOCK );
+  BALL_to_GO_send ( BALL_to_go );
 
-  GAME_TIME_send ( GAME_TIME_min, GAME_TIME_seg );
+  BALL_DOWN_send ( BALL_down );
+
+  BALL_POSITION_send ( BALL_position );
+  
+  PLAY_CLOCK_send ( PLAY_CLOCK );
 
   TIMEOUT_VANTAGE_send ( TMOUT_home, TMOUT_guest, GAME_VANTAGE );
 
@@ -499,13 +503,6 @@ void  PLACAR_DISPLAY_normal_serialize ()
   SCORE_GUEST_send ( SCORE_guest );
 
   SCORE_HOME_send ( SCORE_home );
-
-
-  BALL_to_GO_send ( BALL_to_go );
-
-  BALL_DOWN_send ( BALL_down );
-
-  BALL_POSITION_send ( BALL_position );
 
   GAME_TIME_send ( GAME_TIME_min, GAME_TIME_seg );
 }
@@ -520,9 +517,13 @@ void  PLACAR_DISPLAY_normal_serialize ()
  */
 void  PLACAR_DISPLAY_swap_serialize ()
 {
-  PLAY_CLOCK_send ( PLAY_CLOCK );
+  BALL_to_GO_send ( BALL_to_go );
 
-  GAME_TIME_send ( GAME_TIME_min, GAME_TIME_seg );
+  BALL_DOWN_send ( BALL_down );
+
+  BALL_POSITION_send ( PLAY_CLOCK );  // overlap "Ball" com o "Play Clock".
+
+  PLAY_CLOCK_send ( PLAY_CLOCK );
 
   TIMEOUT_VANTAGE_send ( TMOUT_home, TMOUT_guest, GAME_VANTAGE );
 
@@ -531,14 +532,6 @@ void  PLACAR_DISPLAY_swap_serialize ()
   SCORE_GUEST_send ( SCORE_guest );
 
   SCORE_HOME_send ( SCORE_home );
-
- 
-
-  BALL_to_GO_send ( BALL_to_go );
-
-  BALL_DOWN_send ( BALL_down );
-
-  BALL_POSITION_send ( PLAY_CLOCK );  // overlap "Ball" com o "Play Clock".
 
   GAME_TIME_send ( GAME_TIME_min, GAME_TIME_seg );
 }
