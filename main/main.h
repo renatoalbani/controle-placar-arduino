@@ -31,7 +31,7 @@
  * UNO = opcao para utilizacao da placa Arduino UNO.
  * MEGA_2560 = opcao para utilizacao da placa Arduino Mega 2560.
  **/
-#define HW_Board  UNO_rev3 // seleciona a placa utilizada.
+#define HW_Board  MEGA_2560 // seleciona a placa utilizada.
 
 /*
  * Pinos para controle do 
@@ -60,7 +60,7 @@
  * 1 = execucao "simulada" via placa virtual.
  *
  **/
-#define SIMUL 1
+#define SIMUL 0
 
 /*
  * Taxa de atualizacao dos displays
