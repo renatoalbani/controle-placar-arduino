@@ -30,8 +30,38 @@ C74HC595::C74HC595(BYTE SCLK_PIN, BYTE SOUT_PIN, BYTE LCLK_PIN){
  */
 void C74HC595::writeData(BYTE DATA_8){
 
-  shiftOut(_SOUT_PIN, _SCLK_PIN, MSBFIRST, DATA_8);
- 
+  BYTE  bit_n;  // bit atual sendo enviado ao ShiftRegister.
+  BYTE  bit_MASK; // máscara binária para o bit atual.
+
+  bit_MASK = BIT_7;
+
+  for ( bit_n = 0; bit_n <=7; bit_n++ )
+  {
+    if ( DATA_8 & bit_MASK )
+    {
+      digitalWrite ( _SOUT_PIN, HIGH );
+
+    }
+    else
+    {
+      digitalWrite ( _SOUT_PIN, LOW );
+    }
+
+    digitalWrite ( _SCLK_PIN, LOW );
+
+    delayMicroseconds(1);
+
+    digitalWrite ( _SCLK_PIN, HIGH );
+
+    delayMicroseconds(1);
+
+    bit_MASK = ( bit_MASK >> 1);
+  }
+
+  delayMicroseconds(1);
+  digitalWrite ( _SOUT_PIN, HIGH );
+  digitalWrite ( _SCLK_PIN, LOW );
+  
 }
 /**
  * Funcao para transicao de clock do LATCH
