@@ -13,6 +13,7 @@
 #include <avr/pgmspace.h> // para acesso à FLASH da CPU.
 
 #include "C74HC595.h" //funcoes para controle dos 74HC595
+#include "cmdbuffer.h"
 
 #include "rxplacar.h"
 
@@ -101,16 +102,6 @@ CRONO_type  PLAY_CLOCK_CRONO; // cronometro para cadencia do
 
 BYTE  CMD_reply = CMD_full_reply; // indica o tipo de resposta aos
                                   // comandos recebidos.
-
-/*
- * Definicoes do buffer de comandos
- */
- // maximo de caracteres em um comando.
-#define CMD_size 10
-BYTE  CMD_BUFF [CMD_size];  // Buffer de Comandos recebidos.
-BYTE  CMD_BUFF_idx; // posicao atual no Buffer de Comandos.
-
-
 CMD_func_PTR SYS_CMD_PTR; // Ponteiro para o Comando a ser executado.
 /*
  * Inicializa o cronometro de cadencia do "Play clock"
@@ -869,59 +860,6 @@ void  GAME_TIME_cadence ()
 }
 
 /*
- * Limpa o buffer de comandos
- */
-void  CMD_BUFF_reset ()
-{
-  CMD_BUFF_idx = 0;
-
-  for (BYTE i=0; i< CMD_size; i++ )
-  {
-    CMD_BUFF [i] = 0;
-  }
-}
-
-/*
- * Adiciona um caracter ao buffer de
- * comandos
- */
-void  CMD_BUFF_ins ( BYTE new_char )
-{
-  if ( CMD_BUFF_idx < CMD_size )
-  {
-    CMD_BUFF [CMD_BUFF_idx] = LOW_CASE_conv (new_char);
-
-    CMD_BUFF_idx++;
-  }
-}
-
-/*
- * Le um caracter de comando 
- * da interface serial
- *  @returns bool True caso seja o caracter de fim de comando
- *                False caso contrario
- */
-bool  COMMAND_get ()
-{
-  
-  if ( 0 >= Serial.available() )
-  {
-    return false;
-  } 
-  
-  BYTE rcv_char = Serial.read();
-
-  if ( CMD_end == rcv_char )
-  {
-    return true;
-  }
-    
-  CMD_BUFF_ins (rcv_char);
-  
-  return false;
-}
-
-/*
  * Localiza o comando a ser executado de acordo 
  * com o tipo de comando enviado memorizado
  * no buffer de comandos
@@ -930,10 +868,10 @@ bool  COMMAND_get ()
  */
 bool  COMMAND_decode ( struct CMD_LOC_info *CMD_list_PTR )
 {
-  char CMD_code, LOC_code;
+  unsigned char CMD_code, LOC_code;
   BYTE CMD_idx;
   
-  CMD_code = CMD_BUFF [0];
+  readCommandBuffer(&CMD_code, 1);
 
   CMD_idx = 0;
 
@@ -1006,12 +944,20 @@ void  COMMAND_OK_reply ()
  */
 void  COMMAND_exec ()
 {
-  bool ok = SYS_CMD_PTR ( CMD_BUFF, 1 ); // executa o comando
+  BYTE EBUFF[CMD_MAX_SIZE];
+  //bool ok = SYS_CMD_PTR ( CMD_BUFF, 1 ); // executa o comando
+  readCommandBuffer(EBUFF, sizeof(EBUFF));
+  bool ok = SYS_CMD_PTR ( EBUFF, 0 );
   if ( ! ok ) { 
      COMMAND_FAIL_reply ();
      return;
   }
   COMMAND_OK_reply ();    // resposta de sucesso
+}
+
+bool COMMAND_radio_get() {
+  //TODO: Read Radio Command
+  return false;
 }
 
 /*
@@ -1020,22 +966,27 @@ void  COMMAND_exec ()
  */
 void  COMMAND_proc ( struct CMD_LOC_info *CMD_list_PTR )
 {
-  if ( ! COMMAND_get () )
-  {
+  readCommandInterfaces();
+  if ( !existsCommand() )
+  {  
     return;    
   }
 
+  #if (DEBUG == 1)
+    printBufferData();
+  #endif
+  
   bool ok =  COMMAND_decode ( CMD_list_PTR );
   
   if ( ! ok ){
     
+    flipCommand();
     COMMAND_FAIL_reply ();
     return;
  
   }
     
   COMMAND_exec ();
-  CMD_BUFF_reset ();
     
 }
 /*
@@ -2706,6 +2657,7 @@ void  PLACAR_SETTING_init ()
 
 
   PLAY_CLOCK = 40;  // seta o "Play Clock" atual do jogo (00..99).
+
 }
 
 void rxSetup(){

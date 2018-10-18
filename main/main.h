@@ -62,6 +62,14 @@
  **/
 #define SIMUL 0
 
+/**
+ * Opcao para depuracao via serial
+ * de pontos de codigo especificos
+ * 0 = Escrita de depuracao desabilitada
+ * 1 = Escrita de depuracao habilitada
+ */
+#define DEBUG 0
+
 /*
  * Taxa de atualizacao dos displays
  */
