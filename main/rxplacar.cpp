@@ -13,7 +13,7 @@
 #include <avr/pgmspace.h> // para acesso à FLASH da CPU.
 
 #include "C74HC595.h" //funcoes para controle dos 74HC595
-#include "cmdbuffer.h"
+#include "cmdbuffer.h" //buffer circular para enfileiramento de comandos
 
 #include "rxplacar.h"
 
@@ -2586,6 +2586,7 @@ bool  no_reply_SET_CMD ( BYTE_PTR CMD_data, BYTE index )
  */
 void  SYS_HARDWARE_init (){
   Serial.begin(9600);
+  initCommandInterfaces();
 }
 
 /*

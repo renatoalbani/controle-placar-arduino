@@ -17,6 +17,12 @@
 #define BUFF_SIZE (CMD_MAX_QTY * CMD_MAX_SIZE) //tamanho do buffer em bytes
 
 /*
+ * Inicializacao das distintas 
+ * interfaces de recebimento de
+ * comandos
+ */
+extern void initCommandInterfaces();
+/*
  * Le as distintas interfaces de recebimento
  * de comandos e adiciona os comandos a fila
  */

@@ -19,6 +19,27 @@
 #define TX_RADIO 1
 #define RADIO_MODE RX_RADIO
 
+/*
+ * Definicoes para habilitar/desabilitar
+ * compilacao com recebimento de comandos
+ * por radio
+ */
+#define RX_RADIO_ENABLED 1
+#define RX_RADIO_DISABLED 0
+#define RX_RADIO_MODE RX_RADIO_ENABLED
+
+/*
+ * Endereco logico para transmissao/recepcao de mensagens
+ */
+#define PIPEADDR "RADIO" 
+
+#define RF24_PIPE0 0
+#define RF24_PIPE1 1
+#define RF24_PIPE2 2
+#define RF24_PIPE3 3
+#define RF24_PIPE4 4
+#define RF24_PIPE5 5
+
 /**
  * Definicao dos modelos (ou tipos) de placas da Plataforma
  * Arduino, suportados por este Sistema:
@@ -32,26 +53,6 @@
  * MEGA_2560 = opcao para utilizacao da placa Arduino Mega 2560.
  **/
 #define HW_Board  MEGA_2560 // seleciona a placa utilizada.
-
-/*
- * Pinos para controle do 
- * modulo nRF24L01
- * para a board UNO
- */
-#if (HW_Board == MEGA_2560)
-  #define RF24_CE_PIN 9
-  #define RF24_CSN_PIN 10 
-#endif
-
-/*
- * Pinos de controle do
- * modulo nRF24L01
- * para a board MEGA
- */
-#if (HW_Board == UNO_rev3)
-  #define RF24_CE_PIN 9
-  #define RF24_CSN_PIN 10
-#endif
 
 /**
  * Opcao para execucao "real" ou "simulada":

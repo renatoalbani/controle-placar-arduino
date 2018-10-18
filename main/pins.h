@@ -49,4 +49,24 @@
 
 #endif
 
+/*
+ * Pinos para controle do 
+ * modulo nRF24L01
+ * para a board UNO
+ */
+#if (HW_Board == MEGA_2560)
+  #define RF24_CE_PIN 8
+  #define RF24_CSN_PIN 9 
+#endif
+
+/*
+ * Pinos de controle do
+ * modulo nRF24L01
+ * para a board MEGA
+ */
+#if (HW_Board == UNO_rev3)
+  #define RF24_CE_PIN 9
+  #define RF24_CSN_PIN 10
+#endif
+
 #endif

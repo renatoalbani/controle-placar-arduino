@@ -6,24 +6,14 @@
  */
 #include <Arduino.h>
 
-/*
- * Bibliotecas para controle  
- * do RF transceiver nRF24L01
- */
-#include <RF24_config.h> 
-#include <RF24.h> 
-#include <printf.h>
-#include <nRF24L01.h>
-
 #include "main.h"
+#include "pins.h"
 #include "types.h"
 #include "pgmrom.h"
 #include "txplacar.h"
-/*
- * Instancia o driver de radio
- */
-RF24 _radio(RF24_CE_PIN, RF24_CSN_PIN);
-BYTE _PIPEADDR[] = { "ADDR1" }; //endereco logico para transmissao de mensagens
+
+#include "radio.h"
+
 char _commandBuffer[CMD_size]; //buffer de commandos lidos pela serial
 /*
  * Limpa o buffer a direita a partir de 
@@ -50,7 +40,7 @@ void printCommand(){
  * Envia o comando via radio
  */
 bool txSendCommand() {
-  return _radio.write(_commandBuffer, sizeof(_commandBuffer));
+  writeRadioPkg(_commandBuffer, sizeof(_commandBuffer));
 }
 
 /*
@@ -87,8 +77,7 @@ void txLoop(){
  */
 void txSetup(){
   Serial.begin (9600);
-  _radio.begin();
-  _radio.openWritingPipe(_PIPEADDR);
+  initRadio();
   ROM_SERIAL_LF_print("Inicializando transmissor de comandos...");
   Serial.println (); 
 }

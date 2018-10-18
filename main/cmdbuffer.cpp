@@ -1,7 +1,11 @@
 #include <Arduino.h>
 #include "types.h"
 #include "main.h"
+#include "pins.h"
 #include "cmdbuffer.h"
+
+#include "radio.h"
+
 
 /*
  * Buffers 
@@ -141,6 +145,7 @@ void readSerialInterface(){
   if(CMD_end != *(serialWriteRef - 1)){    
     return;
   }
+  Serial.println("Write serial read command");
   writeBuffer(SERIAL_CMD_BUFFER, (serialWriteRef - SERIAL_CMD_BUFFER));
   serialWriteRef = SERIAL_CMD_BUFFER;
 }
@@ -149,7 +154,12 @@ void readSerialInterface(){
  * do sistema
  */
 void readRadioInterface(){
-  return;
+  BYTE RBUFF[CMD_MAX_SIZE];
+  uint readLen = readRadioPkg(RBUFF, sizeof(RBUFF));
+  if(readLen <= 0){
+    return;
+  }
+  writeBuffer(RBUFF, sizeof(RBUFF));
 }
 /*
  * Le as distintas interfaces de recebimento
@@ -157,7 +167,9 @@ void readRadioInterface(){
  */
 void readCommandInterfaces(){
   readSerialInterface();
+  #if (RX_RADIO_ENABLED == RX_RADIO_MODE)
   readRadioInterface();
+  #endif
 }
 /*
  * Verifica se existe um comando enfileirado
@@ -210,4 +222,18 @@ void flipCommand(){
     ++readRef;
   }
   ++readRef;
+}
+
+/*
+ * Inicializacao das distintas 
+ * interfaces de recebimento de
+ * comandos
+ */
+void initCommandInterfaces(){
+  //TODO: Verificar a posibilidade de inicializar
+  //      a interface serial atraves desta
+  //      chamada
+  #if (RX_RADIO_ENABLED == RX_RADIO_MODE) 
+  initRadio();
+  #endif
 }
