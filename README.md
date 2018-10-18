@@ -2,9 +2,9 @@
 
 Controle de placar de futebol americano baseado em arduíno
 
-##Instruções para compilação do projeto
+## Instruções para compilação do projeto
 
-###Customização de acordo com o modelo da placa arduíno
+### Customização de acordo com o modelo da placa arduíno
 
 Algumas definições modificam-se de acordo com o modelo do arduíno alvo da gravação
 do resultado da compilação. Foi definido a macro HW_Board para parametrizar a compilação, 
@@ -21,7 +21,7 @@ Caso o alvo seja uma arduíno MEGA 2560
 #define HW_Board MEGA_2560
 ```
 
-###Definições relacionadas a placa alvo da gravação
+### Definições relacionadas a placa alvo da gravação
 
 O projeto está definido para dois modos de construção de acordo com o arduíno alvo da gravação.
 Algumas macros foram definidas para flexibilizar a parametrização da construção do projeto permitindo
@@ -52,7 +52,7 @@ na biblioteca main.h defina a macro RX_RADIO_MODE conforme abaixo:
 #define RX_RADIO_MODE RX_RADIO_ENABLED
 ``` 
 
-###Definições relacionadas a pinagem das placas
+### Definições relacionadas a pinagem das placas
 
 É importante antes de proceder a compilação verificar se as definições
 dos pinos utilizados estão de acordo com a montagem física da placa.
